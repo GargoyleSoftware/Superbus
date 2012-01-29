@@ -1,5 +1,7 @@
 package co.touchlab.android.superbus;
 
+import android.content.Context;
+
 import java.io.Serializable;
 
 /**
@@ -21,7 +23,7 @@ public abstract class Command implements Comparable<Command>, Serializable
 
     public abstract Command copy();
 
-    public abstract void callCommand()throws TransientException, PermanentException;
+    public abstract void callCommand(Context context)throws TransientException, PermanentException;
 
     public long getLastUpdate()
     {

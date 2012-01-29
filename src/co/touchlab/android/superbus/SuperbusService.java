@@ -248,7 +248,7 @@ public abstract class SuperbusService extends Service
     {
         logCommand(command, "callCommand");
 
-        command.callCommand();
+        command.callCommand(this);
 
         logCommand(command, "callComand (done)");
     }
@@ -266,11 +266,11 @@ public abstract class SuperbusService extends Service
         }
     }
 
-    public static void startMe(Context c, Command sc)
+    /*public static void startMe(Context c, Command sc)
     {
         Intent intent = new Intent(c, SuperbusService.class);
         if(sc != null)
             intent.putExtra(SERVICE_COMMAND, sc);
         c.startService(intent);
-    }
+    }*/
 }
