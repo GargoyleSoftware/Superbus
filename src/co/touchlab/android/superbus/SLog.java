@@ -21,6 +21,11 @@ public class SLog
         Log.i(c.getName(), s);
     }
 
+    public static void loge(Class c, String s)
+    {
+        Log.e(c.getName(), s);
+    }
+
     public static void loge(Class c, Throwable e)
     {
         Log.e(c.getName(), "", e);

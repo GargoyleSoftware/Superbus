@@ -13,9 +13,13 @@ import java.io.Serializable;
  */
 public abstract class Command implements Comparable<Command>, Serializable
 {
+    public static final int DEFAULT_PRIORITY = 10;
     //Init with current time. Allow override by accessors
     private long lastUpdate = System.currentTimeMillis();
     private long errorCount = 0;
+
+    private int priority = DEFAULT_PRIORITY;
+    private long added = System.currentTimeMillis();
 
     public abstract String logSummary();
 
@@ -43,5 +47,33 @@ public abstract class Command implements Comparable<Command>, Serializable
     public void setErrorCount(long errorCount)
     {
         this.errorCount = errorCount;
+    }
+
+    public int getPriority()
+    {
+        return priority;
+    }
+
+    public void setPriority(int priority)
+    {
+        this.priority = priority;
+    }
+
+    public long getAdded()
+    {
+        return added;
+    }
+
+    public void setAdded(long added)
+    {
+        this.added = added;
+    }
+
+    public int compareTo(Command command)
+    {
+        int priorityCompare = priority - command.getPriority();
+        if(priorityCompare != 0)
+            return priorityCompare;
+        return (int)(added - command.getAdded());
     }
 }

@@ -7,6 +7,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +41,12 @@ public abstract class SuperbusService extends Service
         return binder;
     }
 
+    public abstract void addCommandToStorage(Command command)throws StorageException;
+
+    public abstract void removeCommandFromStorage(Command command, boolean commandProcessedOK)throws StorageException;
+
+    public abstract void loadCommandsOnStartup(List<Command> commands)throws StorageException;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
@@ -50,7 +57,18 @@ public abstract class SuperbusService extends Service
         if(command != null)
         {
             SLog.logv(getClass(), "new command");
-            addCommand(command, "onStartCommand");
+            if(addCommand(command, "onStartCommand"))
+            {
+                try
+                {
+                    addCommandToStorage(command);
+                }
+                catch (StorageException e)
+                {
+                    //Perhaps we can be less strict in the future, but if your app is bombing, no reason to be shy about it.
+                    throw new RuntimeException(e);
+                }
+            }
         }
 
         checkAndStart();
@@ -59,26 +77,36 @@ public abstract class SuperbusService extends Service
         return Service.START_STICKY;
     }
 
-    private synchronized void addCommand(final Command command, String source)
+    /**
+     * Checks for existing commands that say the same thing.  If none found, add.
+     *
+     * @param command
+     * @param source
+     * @return true if new command added to list.  False if already found.
+     */
+    private synchronized boolean addCommand(final Command command, String source)
     {
         logCommand(command, "addCommand ("+ source +")");
 
         if(command == null)
-            return;
+            return false;
 
         for (Command serviceCommand : serviceCommands)
         {
             if(serviceCommand.same(command))
             {
+                Log.d(getClass().getName(), "Found same command.  Resetting: "+ command.logSummary());
                 serviceCommand.setLastUpdate(Math.max(command.getLastUpdate(), serviceCommand.getLastUpdate()));
                 serviceCommand.setErrorCount(0);
-                return;
+                return false;
             }
         }
 
         serviceCommands.add(command);
 
         Collections.sort(serviceCommands);
+
+        return true;
     }
 
     private void logCommand(Command command, String methodName)
@@ -120,17 +148,15 @@ public abstract class SuperbusService extends Service
         SLog.logv(getClass(), "removeCommand done " + System.currentTimeMillis());
     }
 
-    public abstract void loadCommandsOnStartup();
-
     /**
      * Need to actually remove the command for processing.  If another comes in while sync is happening,
      * there can be data loss.
      * @return
      */
-    private synchronized Command copyTop()
+    private synchronized Command grabTop()
     {
         if(serviceCommands.size() > 0)
-            return serviceCommands.remove(0).copy();
+            return serviceCommands.remove(0);
         else
             return null;
     }
@@ -146,7 +172,14 @@ public abstract class SuperbusService extends Service
 
         SLog.logv(getClass(), "onCreate done " + System.currentTimeMillis());
 
-        loadCommandsOnStartup();
+        try
+        {
+            loadCommandsOnStartup(serviceCommands);
+        }
+        catch (StorageException e)
+        {
+            Log.e(getClass().getName(), "", e);
+        }
     }
 
     @Override
@@ -181,8 +214,10 @@ public abstract class SuperbusService extends Service
 
             Command c;
 
+            int transientCount = 0;
+
             // Send notification that service started
-            while ((c = copyTop()) != null)
+            while ((c = grabTop()) != null)
             {
                 if(!isOnline(SuperbusService.this))
                 {
@@ -193,30 +228,48 @@ public abstract class SuperbusService extends Service
                 SLog.logv(getClass(), "CommandThread loop start "+ System.currentTimeMillis());
 
                 long delaySleep = 0l;
+                boolean removeCommandPermanently = false;
+                boolean commandSuccess = false;
 
                 try
                 {
                     callCommand(c);
+                    removeCommandPermanently = true;
+                    commandSuccess = true;
+                    transientCount = 0;
                 }
                 catch (PermanentException e)
                 {
                     SLog.loge(getClass(), e);
+                    removeCommandPermanently = true;
                 }
                 catch (TransientException e)
                 {
                     addCommand(c, "TransientException");
                     SLog.loge(getClass(), e);
                     delaySleep = 10000;
+                    transientCount++;
+                    if(transientCount > 3)
+                        break;
                 }
                 catch (Exception e)
                 {
                     addCommand(c, "Exception");
-                    logCommandError(e, c);
+                    removeCommandPermanently = logCommandError(e, c);
                     delaySleep = 2000;
                 }
 
-                //Just in case
-                c = null;
+                if(removeCommandPermanently)
+                {
+                    try
+                    {
+                        removeCommandFromStorage(c, commandSuccess);
+                    }
+                    catch (StorageException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
 
                 if(delaySleep > 0)
                 {
@@ -230,7 +283,7 @@ public abstract class SuperbusService extends Service
                     }
                 }
 
-                SLog.logv(getClass(), "CommandThread loop end "+ System.currentTimeMillis());
+                SLog.logv(getClass(), "CommandThread loop end " + System.currentTimeMillis());
             }
 
             SLog.logi(getClass(), "CommandThread loop done");
@@ -253,17 +306,28 @@ public abstract class SuperbusService extends Service
         logCommand(command, "callComand (done)");
     }
 
-    private void logCommandError(final Exception e, final Command command)
+    /**
+     *
+     * @param e
+     * @param command
+     * @return true if command should be yanked from list permanently
+     */
+
+    private boolean logCommandError(final Exception e, final Command command)
     {
         SLog.loge(getClass(), e);
+        SLog.loge(getClass(), "logCommandError: "+ command.logSummary());
         if(command.getErrorCount() >= 3)
         {
             removeCommand(command);
+            return true;
         }
         else
         {
             command.setErrorCount(command.getErrorCount()+1);
         }
+
+        return false;
     }
 
     /*public static void startMe(Context c, Command sc)
