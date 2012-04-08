@@ -29,6 +29,38 @@ public abstract class Command implements Comparable<Command>, Serializable
 
     public abstract void callCommand(Context context)throws TransientException, PermanentException;
 
+    /**
+     * There was a transient problem with this command.  Its being put back on the queue.
+     *
+     * @param exception Exception that caused the removal
+     */
+    public void onTransientError(TransientException exception)
+    {
+
+    }
+
+    /**
+     * There was a permanent problem with this command and its being removed.
+     *
+     * @param exception Exception that caused the removal
+     */
+    public void onPermanentError(PermanentException exception)
+    {
+
+    }
+
+    /**
+     * Some unknown error happened.  You *should* be catching and dealing with exceptions yourself.  Whatever you don't deal
+     * with winds up here.  These are generally retried a few times in a row, but will eventually be removed from the queue.
+     *
+     * @param e Exception cause
+     * @param removed true if command removed from queue
+     */
+    public void onUnknownError(Exception e, boolean removed)
+    {
+
+    }
+
     public long getLastUpdate()
     {
         return lastUpdate;

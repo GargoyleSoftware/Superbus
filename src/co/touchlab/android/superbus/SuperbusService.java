@@ -113,7 +113,7 @@ public abstract class SuperbusService extends Service
     {
         try
         {
-            SLog.logi(getClass(), methodName + ": "+ command.logSummary());
+            SLog.logi(getClass(), methodName + ": " + command.getAdded() + " : " + command.logSummary());
         }
         catch (Exception e)
         {
@@ -242,13 +242,17 @@ public abstract class SuperbusService extends Service
                 {
                     SLog.loge(getClass(), e);
                     removeCommandPermanently = true;
+                    c.onPermanentError(e);
                 }
                 catch (TransientException e)
                 {
                     addCommand(c, "TransientException");
+                    c.onTransientError(e);
                     SLog.loge(getClass(), e);
                     delaySleep = 10000;
                     transientCount++;
+
+                    //If we have several transient exceptions in a row, break and sleep.
                     if(transientCount > 3)
                         break;
                 }
