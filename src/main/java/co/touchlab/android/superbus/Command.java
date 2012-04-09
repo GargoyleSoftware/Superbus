@@ -25,8 +25,6 @@ public abstract class Command implements Comparable<Command>, Serializable
 
     public abstract boolean same(Command command);
 
-    public abstract Command copy();
-
     public abstract void callCommand(Context context)throws TransientException, PermanentException;
 
     /**
