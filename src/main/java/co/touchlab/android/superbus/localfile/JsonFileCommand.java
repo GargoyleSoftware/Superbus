@@ -1,6 +1,7 @@
 package co.touchlab.android.superbus.localfile;
 
 import co.touchlab.android.superbus.StorageException;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -19,10 +20,18 @@ public abstract class JsonFileCommand extends LocalFileCommand
     {
         JSONObject jsonObject = new JSONObject();
 
-        writeToStorage(jsonObject);
+        try
+        {
+            writeToStorage(jsonObject);
+            out.write(jsonObject.toString().getBytes());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
-    public abstract void writeToStorage(JSONObject jsonObject);
+    public abstract void writeToStorage(JSONObject jsonObject)throws JSONException;
 
     @Override
     public void readFromStorage(InputStream inp)throws StorageException
@@ -38,7 +47,7 @@ public abstract class JsonFileCommand extends LocalFileCommand
         }
     }
 
-    public abstract void readFromStorage(JSONObject jsonObject);
+    public abstract void readFromStorage(JSONObject jsonObject)throws JSONException;
 
     public String convertStreamToString(InputStream is)throws IOException
     {

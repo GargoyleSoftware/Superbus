@@ -30,7 +30,7 @@ public abstract class LocalFileBusService extends SuperbusService
 
                 File commands = commandsDirectory();
                 String commandClassName = command.getClass().getName();
-                String fullCommandFileName = commandClassName + "." + System.currentTimeMillis() + ".command";
+                String fullCommandFileName = commandClassName + "." + System.currentTimeMillis();
 
                 File tempCommandFile = new File(commands, "__" + fullCommandFileName);
                 File finalCommandFile = new File(commands, fullCommandFileName);
@@ -62,7 +62,9 @@ public abstract class LocalFileBusService extends SuperbusService
     private File commandsDirectory()
     {
         File filesDir = getFilesDir();
-        return new File(filesDir, "commands");
+        File commands = new File(filesDir, "commands");
+        commands.mkdirs();
+        return commands;
     }
 
     @Override
@@ -103,23 +105,32 @@ public abstract class LocalFileBusService extends SuperbusService
             }
         });
 
-        for (File commandFile : commandFiles)
+        if(commandFiles != null)
         {
-            try
+            for (File commandFile : commandFiles)
             {
-                LocalFileCommand command = createCommand();
-                FileInputStream inp = new FileInputStream(commandFile);
-                command.readFromStorage(inp);
-                inp.close();
-                commands.add(command);
-            }
-            catch (Exception e)
-            {
-                throw new StorageException("Couldn't load command: "+ commandFile.getName(), e);
+                try
+                {
+                    LocalFileCommand command = createCommand(commandFile);
+                    FileInputStream inp = new FileInputStream(commandFile);
+                    command.readFromStorage(inp);
+                    inp.close();
+                    commands.add(command);
+                }
+                catch (Exception e)
+                {
+                    throw new StorageException("Couldn't load command: "+ commandFile.getName(), e);
+                }
             }
         }
     }
 
-    public abstract LocalFileCommand createCommand();
+    protected String extractCommandClassName(File file)
+    {
+        String name = file.getName();
+        return name.substring(0, name.lastIndexOf("."));
+    }
+
+    public abstract LocalFileCommand createCommand(File file);
 
 }

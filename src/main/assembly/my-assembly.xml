@@ -1,0 +1,11 @@
+<assembly>
+  <fileSets>
+    <fileSet>
+      <directory>${project.build.directory}/lib</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>*.*</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+</assembly>
