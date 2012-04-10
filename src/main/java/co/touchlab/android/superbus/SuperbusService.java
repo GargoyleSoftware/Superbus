@@ -52,26 +52,36 @@ public abstract class SuperbusService extends Service
     {
         SLog.logv(getClass(), "onStartCommand " + System.currentTimeMillis());
 
-        Command command = intent == null ? null : ((Command) intent.getSerializableExtra(SERVICE_COMMAND));
+        final Command command = intent == null ? null : ((Command) intent.getSerializableExtra(SERVICE_COMMAND));
 
         if(command != null)
         {
-            SLog.logv(getClass(), "new command");
-            if(addCommand(command, "onStartCommand"))
+            new Thread()
             {
-                try
+                @Override
+                public void run()
                 {
-                    addCommandToStorage(command);
+                    SLog.logv(getClass(), "new command");
+                    if(addCommand(command, "onStartCommand"))
+                    {
+                        try
+                        {
+                            addCommandToStorage(command);
+                        }
+                        catch (StorageException e)
+                        {
+                            //Perhaps we can be less strict in the future, but if your app is bombing, no reason to be shy about it.
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    checkAndStart();
                 }
-                catch (StorageException e)
-                {
-                    //Perhaps we can be less strict in the future, but if your app is bombing, no reason to be shy about it.
-                    throw new RuntimeException(e);
-                }
-            }
+            }.start();
         }
-
-        checkAndStart();
+        else
+        {
+            checkAndStart();
+        }
 
         SLog.logv(getClass(), "onStartCommand done "+ System.currentTimeMillis());
         return Service.START_STICKY;
