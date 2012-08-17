@@ -12,7 +12,7 @@
       <output-path>$PROJECT_DIR$/out/artifacts/superbus_jar</output-path>
       <root id="archive" name="superbus.jar">
         <element id="directory" name="META-INF">
-          <element id="file-copy" path="$PROJECT_DIR$/src/META-INF/MANIFEST.MF" />
+          <element id="file-copy" path="$PROJECT_DIR$/library/src/META-INF/MANIFEST.MF" />
         </element>
         <element id="module-output" name="superbus" />
       </root>
@@ -20,6 +20,9 @@
   </component>
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
+    <excludeFromCompile>
+      <directory url="file://$PROJECT_DIR$/example/gen" includeSubdirectories="true" />
+    </excludeFromCompile>
     <resourceExtensions />
     <wildcardResourcePatterns>
       <entry name="?*.properties" />
@@ -46,6 +49,9 @@
     <entry_points version="2.0" />
   </component>
   <component name="IdProvider" IDEtalkID="CE025FAB2B45442816E6B80BA417A956" />
+  <component name="IvyProjectSettings">
+    <dependencies />
+  </component>
   <component name="JavadocGenerationManager">
     <option name="OUTPUT_DIRECTORY" />
     <option name="OPTION_SCOPE" value="protected" />
@@ -190,17 +196,24 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/superbus.iml" filepath="$PROJECT_DIR$/superbus.iml" />
+      <module fileurl="file://$PROJECT_DIR$/library/src/main/Main.iml" filepath="$PROJECT_DIR$/library/src/main/Main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/example/example.iml" filepath="$PROJECT_DIR$/example/example.iml" />
+      <module fileurl="file://$PROJECT_DIR$/library/src/main/library.iml" filepath="$PROJECT_DIR$/library/src/main/library.iml" />
     </modules>
   </component>
   <component name="ProjectResources">
     <default-html-doctype>http://www.w3.org/1999/xhtml</default-html-doctype>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="SvnBranchConfigurationManager">
+    <option name="mySupportsUserInfoFilter" value="true" />
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/example" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/library/src/main" vcs="svn" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
 </project>
