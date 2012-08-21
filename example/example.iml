@@ -39,7 +39,7 @@
     </content>
     <orderEntry type="jdk" jdkName="Android 4.1 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="library" />
+    <orderEntry type="module" module-name="Main" />
   </component>
 </module>
 
