@@ -67,19 +67,30 @@ public class DatabaseHelper extends SQLiteOpenHelper implements PersistenceProvi
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase)
     {
-        sqLiteDatabase.execSQL(CREATE_COMMAND_TABLE);
+        createTables(sqLiteDatabase);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion)
     {
-        sqLiteDatabase.execSQL(DROP_COMMAND_TABLE);
+        dropTables(sqLiteDatabase);
         onCreate(sqLiteDatabase);
     }
 
-
-
     /*** Implementation of the PersistenceProvider interface ***/
+
+    @Override
+    public void createTables(SQLiteDatabase database)
+    {
+        database.execSQL(CREATE_COMMAND_TABLE);
+    }
+
+    @Override
+    public void dropTables(SQLiteDatabase database)
+    {
+        database.execSQL(DROP_COMMAND_TABLE);
+    }
+
     private List<Command> commandList;
 
     private synchronized List<Command> lazyGetInMemoryList() throws StorageException
