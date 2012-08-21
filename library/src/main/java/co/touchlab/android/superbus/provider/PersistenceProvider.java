@@ -1,5 +1,6 @@
 package co.touchlab.android.superbus.provider;
 
+import android.database.sqlite.SQLiteDatabase;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
 
@@ -23,5 +24,7 @@ public interface PersistenceProvider
 
     Collection<? extends Command> loadAll() throws StorageException;
 
-    //void checkCreate(SQLiteDatabase database);
+    void createTables(SQLiteDatabase database);
+
+    void dropTables(SQLiteDatabase database);
 }
