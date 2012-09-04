@@ -23,8 +23,4 @@ public interface PersistenceProvider
     Command getCurrent() throws StorageException;
 
     Collection<? extends Command> loadAll() throws StorageException;
-
-    void createTables(SQLiteDatabase database);
-
-    void dropTables(SQLiteDatabase database);
 }

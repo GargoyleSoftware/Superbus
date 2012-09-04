@@ -16,7 +16,6 @@ public abstract class Command implements Comparable<Command>, Serializable
     public static final int DEFAULT_PRIORITY = 10;
     //Init with current time. Allow override by accessors
     private long lastUpdate = System.currentTimeMillis();
-    private long errorCount = 0;
 
     private int priority = DEFAULT_PRIORITY;
     private long added = System.currentTimeMillis();
@@ -47,18 +46,6 @@ public abstract class Command implements Comparable<Command>, Serializable
 
     }
 
-    /**
-     * Some unknown error happened.  You *should* be catching and dealing with exceptions yourself.  Whatever you don't deal
-     * with winds up here.  These are generally retried a few times in a row, but will eventually be removed from the queue.
-     *
-     * @param e       Exception cause
-     * @param removed true if command removed from queue
-     */
-    public void onUnknownError(Exception e, boolean removed)
-    {
-
-    }
-
     public long getLastUpdate()
     {
         return lastUpdate;
@@ -67,16 +54,6 @@ public abstract class Command implements Comparable<Command>, Serializable
     public void setLastUpdate(long lastUpdate)
     {
         this.lastUpdate = lastUpdate;
-    }
-
-    public long getErrorCount()
-    {
-        return errorCount;
-    }
-
-    public void setErrorCount(long errorCount)
-    {
-        this.errorCount = errorCount;
     }
 
     public int getPriority()

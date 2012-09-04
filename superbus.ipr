@@ -36,7 +36,11 @@
       <entry name="?*.tld" />
       <entry name="?*.ftl" />
     </wildcardResourcePatterns>
-    <annotationProcessing enabled="false" useClasspath="true" />
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
+      </profile>
+    </annotationProcessing>
   </component>
   <component name="CopyrightManager" default="">
     <module2copyright />
@@ -196,7 +200,6 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/library/src/main/Main.iml" filepath="$PROJECT_DIR$/library/src/main/Main.iml" />
       <module fileurl="file://$PROJECT_DIR$/example/example.iml" filepath="$PROJECT_DIR$/example/example.iml" />
       <module fileurl="file://$PROJECT_DIR$/library/src/main/library.iml" filepath="$PROJECT_DIR$/library/src/main/library.iml" />
     </modules>
@@ -212,8 +215,7 @@
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/example" vcs="svn" />
-    <mapping directory="$PROJECT_DIR$/library/src/main" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/example" vcs="" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
 </project>
