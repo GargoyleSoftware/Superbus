@@ -12,6 +12,9 @@ import android.os.IBinder;
 import co.touchlab.android.superbus.provider.PersistedApplication;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
 
+import java.io.IOException;
+import java.net.ProtocolException;
+import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -58,58 +61,6 @@ public class SuperbusService extends Service
         checkAndStart();
         return Service.START_STICKY;
     }
-
-    /*private synchronized boolean addCommand(final Command command, String source)
-    {
-        logCommand(command, "addCommand (" + source + ")");
-
-        if (command == null)
-            return false;
-
-        for (Command serviceCommand : serviceCommands)
-        {
-            if (serviceCommand.same(command))
-            {
-                Log.d(getClass().getName(), "Found same command.  Resetting: " + command.logSummary());
-                serviceCommand.setLastUpdate(Math.max(command.getLastUpdate(), serviceCommand.getLastUpdate()));
-                serviceCommand.setErrorCount(0);
-                return false;
-            }
-        }
-
-        serviceCommands.add(command);
-
-        Collections.sort(serviceCommands);
-
-        return true;
-    }*/
-
-    /*private synchronized void removeCommand(final Command command)
-    {
-        SLog.logv(getClass(), "removeCommand " + System.currentTimeMillis());
-
-        //The logic has changed.  This *should* be gone already. May pull this.
-        for (int i = 0; i < serviceCommands.size(); i++)
-        {
-            Command listCommand = serviceCommands.get(i);
-            if (listCommand.same(command))
-            {
-                if (listCommand.getLastUpdate() <= command.getLastUpdate())
-                {
-                    SLog.logi(getClass(), "Removing listCommand.lastUpdate: " + listCommand.getLastUpdate() + "/command.lastUpdate: " + command.getLastUpdate());
-                    serviceCommands.remove(i);
-                }
-                else
-                {
-                    SLog.logi(getClass(), "Removing listCommand (NOT REALLY!!!) lastUpdate: " + listCommand.getLastUpdate() + "/command.lastUpdate: " + command.getLastUpdate());
-                }
-
-                break;
-            }
-        }
-
-        SLog.logv(getClass(), "removeCommand done " + System.currentTimeMillis());
-    }*/
 
     private void logCommand(Command command, String methodName)
     {
@@ -203,27 +154,28 @@ public class SuperbusService extends Service
                     commandSuccess = true;
                     transientCount = 0;
                 }
-                catch (PermanentException e)
-                {
-                    SLog.loge(getClass(), e);
-                    removeCommandPermanently = true;
-                    c.onPermanentError(e);
-                }
-                catch (TransientException e)
-                {
-                    c.onTransientError(e);
-                    SLog.loge(getClass(), e);
-                    delaySleep = 10000;
-                    transientCount++;
-
-                    //If we have several transient exceptions in a row, break and sleep.
-                    if (transientCount > 3)
-                        break;
-                }
                 catch (Exception e)
                 {
-                    removeCommandPermanently = logCommandError(e, c);
-                    delaySleep = 2000;
+                    if(e instanceof TransientException || e instanceof SocketException || e instanceof ProtocolException)
+                    {
+                        if(e instanceof TransientException)
+                            c.onTransientError((TransientException) e);
+                        else
+                            c.onTransientError(new TransientException(e));
+
+                        SLog.loge(getClass(), e);
+                        delaySleep = 10000;
+                        transientCount++;
+
+                        //If we have several transient exceptions in a row, break and sleep.
+                        if (transientCount > 3)
+                            break;
+                    }
+                    else
+                    {
+                        removeCommandPermanentException(c, new PermanentException(e));
+                        removeCommandPermanently = true;
+                    }
                 }
 
                 if (removeCommandPermanently)
@@ -257,6 +209,12 @@ public class SuperbusService extends Service
             finishThread();
             stopSelf();
         }
+
+        private void removeCommandPermanentException(Command c, PermanentException e)
+        {
+            SLog.loge(getClass(), e);
+            c.onPermanentError(e);
+        }
     }
 
     private synchronized void finishThread()
@@ -271,28 +229,6 @@ public class SuperbusService extends Service
         command.callCommand(this);
 
         logCommand(command, "callComand (done)");
-    }
-
-    /**
-     * @param e
-     * @param command
-     * @return true if command should be yanked from list permanently
-     */
-
-    private boolean logCommandError(final Exception e, final Command command)
-    {
-        SLog.loge(getClass(), e);
-        SLog.loge(getClass(), "logCommandError: " + command.logSummary());
-        if (command.getErrorCount() >= 3)
-        {
-            return true;
-        }
-        else
-        {
-            command.setErrorCount(command.getErrorCount() + 1);
-        }
-
-        return false;
     }
 
     /**
@@ -323,7 +259,7 @@ public class SuperbusService extends Service
      * @param activity A context to use when starting the Service.
      * @param command  A command to store/start.
      */
-    public static void commitDeferred(final Activity activity, final Command command)
+    /*public static void commitDeferred(final Activity activity, final Command command)
     {
         newCommandHandler.submit(new Runnable()
         {
@@ -342,5 +278,5 @@ public class SuperbusService extends Service
                 }
             }
         });
-    }
+    }*/
 }
