@@ -12,7 +12,7 @@ import co.touchlab.android.superbus.StorageException;
  */
 public abstract class StoredCommand extends Command
 {
-    private String commandFileName;
+    private transient String commandFileName;
 
     public String getCommandFileName()
     {
@@ -23,7 +23,4 @@ public abstract class StoredCommand extends Command
     {
         this.commandFileName = commandFileName;
     }
-
-    public abstract String write()throws StorageException;
-    public abstract void read(String data)throws StorageException;
 }

@@ -1,5 +1,7 @@
 package co.touchlab.android.superbus.provider;
 
+import co.touchlab.android.superbus.log.BusLog;
+
 /**
  * User: William Sanville
  * Date: 8/16/12
@@ -10,4 +12,6 @@ package co.touchlab.android.superbus.provider;
 public interface PersistedApplication
 {
     PersistenceProvider getProvider();
+
+    BusLog getLog();
 }

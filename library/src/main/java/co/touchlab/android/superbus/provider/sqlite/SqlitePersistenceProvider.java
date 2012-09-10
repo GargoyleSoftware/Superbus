@@ -102,7 +102,7 @@ public class SqlitePersistenceProvider extends AbstractPersistenceProvider
         {
             String type = c.getString(1);
             StoredCommand storedCommand = (StoredCommand) Class.forName(type).newInstance();
-            storedCommand.read(c.getString(2));
+//            storedCommand.read(c.getString(2));
             storedCommand.setPriority(c.getInt(3));
             return storedCommand;
         }

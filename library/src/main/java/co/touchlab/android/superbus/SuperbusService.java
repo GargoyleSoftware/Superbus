@@ -9,10 +9,11 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.IBinder;
+import co.touchlab.android.superbus.log.BusLog;
+import co.touchlab.android.superbus.log.BusLogImpl;
 import co.touchlab.android.superbus.provider.PersistedApplication;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
 
-import java.io.IOException;
 import java.net.ProtocolException;
 import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
@@ -27,8 +28,10 @@ import java.util.concurrent.Executors;
  */
 public class SuperbusService extends Service
 {
+    public static final String TAG = SuperbusService.class.getSimpleName();
     private CommandThread thread;
     private PersistenceProvider provider;
+    private BusLog log;
 
     //place a cap on the number of threads we kick off to persist incoming commands
     private static ExecutorService newCommandHandler = Executors.newFixedThreadPool(3);
@@ -57,7 +60,7 @@ public class SuperbusService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        SLog.logv(getClass(), "onStartCommand");
+        log.v(TAG, "onStartCommand");
         checkAndStart();
         return Service.START_STICKY;
     }
@@ -66,7 +69,7 @@ public class SuperbusService extends Service
     {
         try
         {
-            SLog.logi(getClass(), methodName + ": " + command.getAdded() + " : " + command.logSummary());
+            log.i(TAG, methodName + ": " + command.getAdded() + " : " + command.logSummary());
         }
         catch (Exception e)
         {
@@ -87,7 +90,7 @@ public class SuperbusService extends Service
         }
         catch (StorageException e)
         {
-            SLog.loge(getClass(), e);
+            log.e(TAG, null, e);
             return null;
         }
     }
@@ -96,15 +99,15 @@ public class SuperbusService extends Service
     public void onCreate()
     {
         super.onCreate();
-        SLog.logv(getClass(), "onCreate " + System.currentTimeMillis());
         provider = checkLoadProvider(getApplication());
+        log.v(TAG, "onCreate " + System.currentTimeMillis());
     }
 
     @Override
     public void onDestroy()
     {
         super.onDestroy();
-        SLog.logi(getClass(), "onDestroy");
+        log.i(TAG, "onDestroy");
     }
 
     private synchronized void checkAndStart()
@@ -128,7 +131,7 @@ public class SuperbusService extends Service
         @Override
         public void run()
         {
-            SLog.logi(getClass(), "CommandThread loop started");
+            log.i(TAG, "CommandThread loop started");
 
             Command c;
 
@@ -138,10 +141,10 @@ public class SuperbusService extends Service
             {
                 if (!isOnline(SuperbusService.this))
                 {
-                    SLog.logi(getClass(), "No network connection. Put off updates.");
+                    log.i(TAG, "No network connection. Put off updates.");
                     break;
                 }
-                SLog.logv(getClass(), "CommandThread loop start " + System.currentTimeMillis());
+                log.v(TAG, "CommandThread loop start " + System.currentTimeMillis());
 
                 long delaySleep = 0l;
                 boolean removeCommandPermanently = false;
@@ -163,7 +166,7 @@ public class SuperbusService extends Service
                         else
                             c.onTransientError(new TransientException(e));
 
-                        SLog.loge(getClass(), e);
+                        log.e(TAG, null, e);
                         delaySleep = 10000;
                         transientCount++;
 
@@ -198,21 +201,21 @@ public class SuperbusService extends Service
                     }
                     catch (InterruptedException e1)
                     {
-                        SLog.loge(getClass(), e1);
+                        log.e(TAG, null, e1);
                     }
                 }
 
-                SLog.logv(getClass(), "CommandThread loop end " + System.currentTimeMillis());
+                log.v(TAG, "CommandThread loop end " + System.currentTimeMillis());
             }
 
-            SLog.logi(getClass(), "CommandThread loop done");
+            log.i(TAG, "CommandThread loop done");
             finishThread();
             stopSelf();
         }
 
         private void removeCommandPermanentException(Command c, PermanentException e)
         {
-            SLog.loge(getClass(), e);
+            log.e(TAG, null, e);
             c.onPermanentError(e);
         }
     }
@@ -238,19 +241,34 @@ public class SuperbusService extends Service
      * @param application The Application object.
      * @return Some implementation of PersistenceProvider.
      */
-    public static PersistenceProvider checkLoadProvider(Application application)
+    public PersistenceProvider checkLoadProvider(Application application)
     {
+        
+        
         PersistenceProvider result = null;
 
         if (application instanceof PersistedApplication)
-            result = ((PersistedApplication)application).getProvider();
+        {
+            PersistedApplication persistedApplication = (PersistedApplication) application;
+            
+            log = persistedApplication.getLog();
+            if(log == null)
+                log = new BusLogImpl();
+            
+            result = persistedApplication.getProvider();
+        }
         else
-            SLog.loge(SuperbusService.class, "Application does not implement PersistedApplication. Could not load provider.");
+            log.e(TAG, "Application does not implement PersistedApplication. Could not load provider.");
 
         if (result == null)
             throw new RuntimeException("No PersistenceProvider was found");
 
         return result;
+    }
+
+    public static void notifyStart(Context c)
+    {
+        c.startService(new Intent(c, SuperbusService.class));
     }
 
     /**
