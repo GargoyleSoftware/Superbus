@@ -4,3 +4,4 @@ out
 target
 example/gen
 .idea
+library/build.sh
