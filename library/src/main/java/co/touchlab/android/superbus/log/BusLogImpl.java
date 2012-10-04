@@ -57,7 +57,7 @@ public class BusLogImpl implements BusLog
     @Override
     public boolean isLoggable(String tag, int level)
     {
-        return isLoggable(tag, level);
+        return Log.isLoggable(tag, level);
     }
 
     @Override

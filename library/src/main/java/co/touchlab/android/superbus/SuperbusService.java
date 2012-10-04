@@ -86,6 +86,7 @@ public class SuperbusService extends Service
     {
         try
         {
+            provider.logPersistenceState();
             return provider.getCurrent();
         }
         catch (StorageException e)

@@ -3,6 +3,7 @@ package co.touchlab.android.superbus.provider;
 import android.database.sqlite.SQLiteDatabase;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
+import co.touchlab.android.superbus.log.BusLog;
 
 import java.util.Collection;
 
@@ -19,4 +20,6 @@ public interface PersistenceProvider
     void remove(Command c, boolean successful) throws StorageException;
 
     Command getCurrent() throws StorageException;
+
+    void logPersistenceState();
 }

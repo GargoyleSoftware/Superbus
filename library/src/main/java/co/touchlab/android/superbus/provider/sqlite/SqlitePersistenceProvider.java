@@ -4,6 +4,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
+import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.provider.AbstractPersistenceProvider;
 import co.touchlab.android.superbus.provider.file.StoredCommand;
 
@@ -26,10 +27,10 @@ public class SqlitePersistenceProvider extends AbstractPersistenceProvider
     private SQLiteDatabaseFactory databaseFactory;
     private List<Command> transactionBatch;
 
-    public SqlitePersistenceProvider(SQLiteDatabaseFactory databaseFactory) throws StorageException
+    public SqlitePersistenceProvider(BusLog log, SQLiteDatabaseFactory databaseFactory) throws StorageException
     {
         this.databaseFactory = databaseFactory;
-        init();
+        init(log);
     }
 
     public void put(Command c) throws StorageException

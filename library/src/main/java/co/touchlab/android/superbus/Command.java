@@ -20,6 +20,8 @@ public abstract class Command implements Comparable<Command>, Serializable
     private int priority = DEFAULT_PRIORITY;
     private long added = System.currentTimeMillis();
 
+
+
     public abstract String logSummary();
 
     public abstract boolean same(Command command);

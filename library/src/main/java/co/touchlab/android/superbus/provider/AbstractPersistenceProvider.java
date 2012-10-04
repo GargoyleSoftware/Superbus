@@ -1,7 +1,10 @@
 package co.touchlab.android.superbus.provider;
 
+import android.util.Log;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
+import co.touchlab.android.superbus.SuperbusService;
+import co.touchlab.android.superbus.log.BusLog;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,9 +21,30 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
 {
     private final PriorityQueue<Command> commandQueue = new PriorityQueue<Command>();
     private boolean initCalled = false;
+    private BusLog log;
 
-    public void init() throws StorageException
+    @Override
+    public void logPersistenceState()
     {
+        if(log.isLoggable(SuperbusService.TAG, Log.INFO))
+        {
+            log.d(SuperbusService.TAG, "queue size: "+ commandQueue.size());
+            if(log.isLoggable(SuperbusService.TAG, Log.DEBUG))
+            {
+                int count = 0;
+
+                for (Command command : commandQueue)
+                {
+                    log.d(SuperbusService.TAG, "command["+ count +"] {"+ command.logSummary() +"}");
+                    count++;
+                }
+            }
+        }
+    }
+
+    public void init(BusLog log) throws StorageException
+    {
+        this.log = log;
         Collection<? extends Command> c = loadAll();
         if(c != null)
             commandQueue.addAll(c);
