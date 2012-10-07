@@ -200,8 +200,7 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/example/example.iml" filepath="$PROJECT_DIR$/example/example.iml" />
-      <module fileurl="file://$PROJECT_DIR$/library/src/main/library.iml" filepath="$PROJECT_DIR$/library/src/main/library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/library/superbus.iml" filepath="$PROJECT_DIR$/library/superbus.iml" />
     </modules>
   </component>
   <component name="ProjectResources">

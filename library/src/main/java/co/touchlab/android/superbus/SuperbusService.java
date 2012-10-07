@@ -158,28 +158,24 @@ public class SuperbusService extends Service
                     commandSuccess = true;
                     transientCount = 0;
                 }
+                catch (TransientException e)
+                {
+//                    addCommand(c, "TransientException");
+                    log.e(TAG, null, e);
+                    c.onTransientError(e);
+                    delaySleep = 10000;
+                    transientCount++;
+
+                    //If we have several transient exceptions in a row, break and sleep.
+                    if (transientCount > 3)
+                        break;
+                }
                 catch (Exception e)
                 {
-                    if(e instanceof TransientException || e instanceof SocketException || e instanceof ProtocolException)
-                    {
-                        if(e instanceof TransientException)
-                            c.onTransientError((TransientException) e);
-                        else
-                            c.onTransientError(new TransientException(e));
-
-                        log.e(TAG, null, e);
-                        delaySleep = 10000;
-                        transientCount++;
-
-                        //If we have several transient exceptions in a row, break and sleep.
-                        if (transientCount > 3)
-                            break;
-                    }
-                    else
-                    {
-                        removeCommandPermanentException(c, new PermanentException(e));
-                        removeCommandPermanently = true;
-                    }
+                    log.e(TAG, null, e);
+                    PermanentException pe = e instanceof PermanentException ? (PermanentException)e : new PermanentException(e);
+                    removeCommandPermanentException(c, new PermanentException(e));
+                    removeCommandPermanently = true;
                 }
 
                 if (removeCommandPermanently)

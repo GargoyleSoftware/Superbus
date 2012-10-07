@@ -22,4 +22,6 @@ public interface PersistenceProvider
     Command getCurrent() throws StorageException;
 
     void logPersistenceState();
+
+    void put(Command c) throws StorageException;
 }
