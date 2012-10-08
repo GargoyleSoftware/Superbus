@@ -63,33 +63,17 @@ public abstract class AbstractFilePersistenceProvider extends AbstractPersistenc
         return commands;
     }
 
-    private Command createCommand(File commandFile)
+    //TODO: when exception triggered, in-memory list needs a refresh (or a full exception thrown).
+    @Override
+    public synchronized Command getAndRemoveCurrent() throws StorageException
     {
-        try
-        {
-            String commandFileName = commandFile.getName();
-            int lastDot = commandFileName.lastIndexOf('.');
-            String className = commandFileName.substring(0, lastDot);
-            Command command = inflateCommand(commandFile, commandFileName, className);
-
-            if(command instanceof StoredCommand)
-                ((StoredCommand)command).setCommandFileName(commandFileName);
-
-            return command;
-        }
-        catch (Exception e)
-        {
-            Log.e(AbstractFilePersistenceProvider.class.getSimpleName(), null, e);
-            commandFile.delete();
-
-            return null;
-        }
+        Command command = super.getAndRemoveCurrent();
+        removeCommand(command);
+        return command;
     }
 
-    protected abstract Command inflateCommand(File commandFile, String commandFileName, String className) throws StorageException;
-
     @Override
-    public void put(Command command) throws StorageException
+    public synchronized void put(Command command) throws StorageException
     {
         try
         {
@@ -120,6 +104,31 @@ public abstract class AbstractFilePersistenceProvider extends AbstractPersistenc
         super.put(command);
     }
 
+    private Command createCommand(File commandFile)
+    {
+        try
+        {
+            String commandFileName = commandFile.getName();
+            int lastDot = commandFileName.lastIndexOf('.');
+            String className = commandFileName.substring(0, lastDot);
+            Command command = inflateCommand(commandFile, commandFileName, className);
+
+            if(command instanceof StoredCommand)
+                ((StoredCommand)command).setCommandFileName(commandFileName);
+
+            return command;
+        }
+        catch (Exception e)
+        {
+            Log.e(AbstractFilePersistenceProvider.class.getSimpleName(), null, e);
+            commandFile.delete();
+
+            return null;
+        }
+    }
+
+    protected abstract Command inflateCommand(File commandFile, String commandFileName, String className) throws StorageException;
+
     protected abstract void storeCommand(Command command, File tempCommandFile)throws StorageException;
 
     private File commandsDirectory()
@@ -129,8 +138,7 @@ public abstract class AbstractFilePersistenceProvider extends AbstractPersistenc
         return commands;
     }
 
-    @Override
-    public void remove(Command command, boolean processedOk) throws StorageException
+    private void removeCommand(Command command) throws StorageException
     {
         if (command instanceof StoredCommand)
         {
@@ -152,7 +160,5 @@ public abstract class AbstractFilePersistenceProvider extends AbstractPersistenc
                 throw new StorageException("Couldn't remove command file");
             }
         }
-
-        super.remove(command, processedOk);
     }
 }

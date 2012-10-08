@@ -24,7 +24,28 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
     private BusLog log;
 
     @Override
-    public void logPersistenceState()
+    public synchronized void put(Command c) throws StorageException
+    {
+        checkInitCalled();
+
+        for (Command command : commandQueue)
+        {
+            if(command.same(c))
+                return;
+        }
+
+        commandQueue.add(c);
+    }
+
+    @Override
+    public synchronized Command getAndRemoveCurrent() throws StorageException
+    {
+        checkInitCalled();
+        return commandQueue.poll();
+    }
+
+    @Override
+    public synchronized void logPersistenceState()
     {
         if(log.isLoggable(SuperbusService.TAG, Log.INFO))
         {
@@ -51,20 +72,6 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
         initCalled = true;
     }
 
-    public void put(Command c) throws StorageException
-    {
-        checkInitCalled();
-        synchronized (commandQueue)
-        {
-            for (Command command : commandQueue)
-            {
-                if(command.same(c))
-                    return;
-            }
-        }
-        commandQueue.add(c);
-    }
-
     private void checkInitCalled() throws StorageException
     {
         if(!initCalled)
@@ -83,19 +90,6 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
         }
     }
 
-    @Override
-    public void remove(Command c, boolean successful) throws StorageException
-    {
-        checkInitCalled();
-        commandQueue.remove(c);
-    }
-
-    @Override
-    public Command getCurrent() throws StorageException
-    {
-        checkInitCalled();
-        return commandQueue.peek();
-    }
 
     public abstract Collection<? extends Command> loadAll() throws StorageException;
 }

@@ -17,11 +17,9 @@ import java.util.Collection;
  */
 public interface PersistenceProvider
 {
-    void remove(Command c, boolean successful) throws StorageException;
+    void put(Command c) throws StorageException;
 
-    Command getCurrent() throws StorageException;
+    Command getAndRemoveCurrent() throws StorageException;
 
     void logPersistenceState();
-
-    void put(Command c) throws StorageException;
 }

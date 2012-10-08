@@ -67,11 +67,11 @@ public class SqlitePersistenceProvider extends AbstractPersistenceProvider
         return transactionBatch != null;
     }
 
-    @Override
+   /* @Override
     public void remove(Command c, boolean successful) throws StorageException
     {
 
-    }
+    }*/
 
     private void delete(Command c)
     {
@@ -79,7 +79,7 @@ public class SqlitePersistenceProvider extends AbstractPersistenceProvider
     }
 
     @Override
-    public Command getCurrent() throws StorageException
+    public Command getAndRemoveCurrent() throws StorageException
     {
         return null;
     }

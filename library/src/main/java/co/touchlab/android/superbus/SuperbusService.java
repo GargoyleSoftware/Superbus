@@ -1,6 +1,5 @@
 package co.touchlab.android.superbus;
 
-import android.app.Activity;
 import android.app.Application;
 import android.app.Service;
 import android.content.Context;
@@ -14,8 +13,6 @@ import co.touchlab.android.superbus.log.BusLogImpl;
 import co.touchlab.android.superbus.provider.PersistedApplication;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
 
-import java.net.ProtocolException;
-import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -33,9 +30,6 @@ public class SuperbusService extends Service
     private PersistenceProvider provider;
     private BusLog log;
 
-    //place a cap on the number of threads we kick off to persist incoming commands
-    private static ExecutorService newCommandHandler = Executors.newFixedThreadPool(3);
-
     public class LocalBinder extends Binder
     {
         public SuperbusService getService()
@@ -50,11 +44,6 @@ public class SuperbusService extends Service
     public IBinder onBind(Intent intent)
     {
         return binder;
-    }
-
-    public void removeCommandFromStorage(Command command, boolean commandProcessedOK) throws StorageException
-    {
-        provider.remove(command, commandProcessedOK);
     }
 
     @Override
@@ -87,7 +76,7 @@ public class SuperbusService extends Service
         try
         {
             provider.logPersistenceState();
-            return provider.getCurrent();
+            return provider.getAndRemoveCurrent();
         }
         catch (StorageException e)
         {
@@ -148,46 +137,34 @@ public class SuperbusService extends Service
                 log.v(TAG, "CommandThread loop start " + System.currentTimeMillis());
 
                 long delaySleep = 0l;
-                boolean removeCommandPermanently = false;
-                boolean commandSuccess = false;
 
                 try
                 {
                     callCommand(c);
-                    removeCommandPermanently = true;
-                    commandSuccess = true;
                     transientCount = 0;
                 }
                 catch (TransientException e)
                 {
-//                    addCommand(c, "TransientException");
-                    log.e(TAG, null, e);
-                    c.onTransientError(e);
-                    delaySleep = 10000;
-                    transientCount++;
-
-                    //If we have several transient exceptions in a row, break and sleep.
-                    if (transientCount > 3)
-                        break;
-                }
-                catch (Exception e)
-                {
-                    log.e(TAG, null, e);
-                    PermanentException pe = e instanceof PermanentException ? (PermanentException)e : new PermanentException(e);
-                    removeCommandPermanentException(c, new PermanentException(e));
-                    removeCommandPermanently = true;
-                }
-
-                if (removeCommandPermanently)
-                {
                     try
                     {
-                        removeCommandFromStorage(c, commandSuccess);
+                        provider.put(c);
+                        log.e(TAG, null, e);
+                        c.onTransientError(e);
+                        delaySleep = 2000;
+                        transientCount++;
+
+                        //If we have several transient exceptions in a row, break and sleep.
+                        if (transientCount >= 2)
+                            break;
                     }
-                    catch (StorageException e)
+                    catch (StorageException e1)
                     {
-                        throw new RuntimeException(e);
+                        logPermanentException(c, e1);
                     }
+                }
+                catch (Throwable e)
+                {
+                    logPermanentException(c, e);
                 }
 
                 if (delaySleep > 0)
@@ -210,10 +187,11 @@ public class SuperbusService extends Service
             stopSelf();
         }
 
-        private void removeCommandPermanentException(Command c, PermanentException e)
+        private void logPermanentException(Command c, Throwable e)
         {
             log.e(TAG, null, e);
-            c.onPermanentError(e);
+            PermanentException pe = e instanceof PermanentException ? (PermanentException)e : new PermanentException(e);
+            c.onPermanentError(pe);
         }
     }
 
@@ -240,8 +218,6 @@ public class SuperbusService extends Service
      */
     public PersistenceProvider checkLoadProvider(Application application)
     {
-        
-        
         PersistenceProvider result = null;
 
         if (application instanceof PersistedApplication)
@@ -267,31 +243,4 @@ public class SuperbusService extends Service
     {
         c.startService(new Intent(c, SuperbusService.class));
     }
-
-    /**
-     * Starts an intent to start the SuperbusService, which will then persist the given command, and then execute it.
-     *
-     * @param activity A context to use when starting the Service.
-     * @param command  A command to store/start.
-     */
-    /*public static void commitDeferred(final Activity activity, final Command command)
-    {
-        newCommandHandler.submit(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                try
-                {
-                    checkLoadProvider(activity.getApplication()).put(command);
-                    activity.startService(new Intent(activity, SuperbusService.class));
-                }
-                catch (StorageException e)
-                {
-                    //maybe replace this...
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-    }*/
 }
