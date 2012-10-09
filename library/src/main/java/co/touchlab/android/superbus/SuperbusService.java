@@ -131,6 +131,14 @@ public class SuperbusService extends Service
             {
                 if (!isOnline(SuperbusService.this))
                 {
+                    try
+                    {
+                        provider.put(c);
+                    }
+                    catch (StorageException e1)
+                    {
+                        logPermanentException(c, e1);
+                    }
                     log.i(TAG, "No network connection. Put off updates.");
                     break;
                 }
