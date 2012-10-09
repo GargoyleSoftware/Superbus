@@ -45,6 +45,13 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
     }
 
     @Override
+    public int getSize() throws StorageException
+    {
+        checkInitCalled();
+        return commandQueue.size();
+    }
+
+    @Override
     public synchronized void logPersistenceState()
     {
         if(log.isLoggable(SuperbusService.TAG, Log.INFO))

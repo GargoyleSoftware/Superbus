@@ -13,9 +13,6 @@ import co.touchlab.android.superbus.log.BusLogImpl;
 import co.touchlab.android.superbus.provider.PersistedApplication;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 /**
  * Created by IntelliJ IDEA.
  * User: kgalligan
@@ -28,6 +25,7 @@ public class SuperbusService extends Service
     public static final String TAG = SuperbusService.class.getSimpleName();
     private CommandThread thread;
     private PersistenceProvider provider;
+    private SuperbusEventListener eventListener;
     private BusLog log;
 
     public class LocalBinder extends Binder
@@ -90,6 +88,7 @@ public class SuperbusService extends Service
     {
         super.onCreate();
         provider = checkLoadProvider(getApplication());
+        eventListener = checkLoadEventListener(getApplication());
         log.v(TAG, "onCreate " + System.currentTimeMillis());
     }
 
@@ -126,6 +125,9 @@ public class SuperbusService extends Service
             Command c;
 
             int transientCount = 0;
+
+            if(eventListener != null)
+                eventListener.onBusStarted(SuperbusService.this, provider);
 
             while ((c = grabTop()) != null)
             {
@@ -190,8 +192,19 @@ public class SuperbusService extends Service
                 log.v(TAG, "CommandThread loop end " + System.currentTimeMillis());
             }
 
+            //TODO: end of thread needs to be synchronized so we don't stop after another
+            //element has been posted
             log.i(TAG, "CommandThread loop done");
             finishThread();
+            try
+            {
+                if(eventListener != null)
+                    eventListener.onBusFinished(SuperbusService.this, provider, provider.getSize() == 0);
+            }
+            catch (StorageException e)
+            {
+                log.e(TAG, null, e);
+            }
             stopSelf();
         }
 
@@ -245,6 +258,25 @@ public class SuperbusService extends Service
             throw new RuntimeException("No PersistenceProvider was found");
 
         return result;
+    }
+
+    /**
+     * We expect the application that uses this library to have a custom subclass of Application which implements
+     * PersistedApplication. This convention is to agree upon a way to specify how the service stores/loads its commands.
+     *
+     * @param application The Application object.
+     * @return Some implementation of PersistenceProvider.
+     */
+    public SuperbusEventListener checkLoadEventListener(Application application)
+    {
+        if (application instanceof PersistedApplication)
+        {
+            PersistedApplication persistedApplication = (PersistedApplication) application;
+
+            return persistedApplication.getEventListener();
+        }
+
+        return null;
     }
 
     public static void notifyStart(Context c)

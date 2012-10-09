@@ -21,5 +21,7 @@ public interface PersistenceProvider
 
     Command getAndRemoveCurrent() throws StorageException;
 
+    int getSize() throws StorageException;
+
     void logPersistenceState();
 }

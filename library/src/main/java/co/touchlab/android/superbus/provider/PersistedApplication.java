@@ -1,5 +1,6 @@
 package co.touchlab.android.superbus.provider;
 
+import co.touchlab.android.superbus.SuperbusEventListener;
 import co.touchlab.android.superbus.log.BusLog;
 
 /**
@@ -14,4 +15,6 @@ public interface PersistedApplication
     PersistenceProvider getProvider();
 
     BusLog getLog();
+
+    SuperbusEventListener getEventListener();
 }
