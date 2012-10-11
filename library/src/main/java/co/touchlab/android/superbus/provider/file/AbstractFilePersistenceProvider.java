@@ -1,17 +1,16 @@
 package co.touchlab.android.superbus.provider.file;
 
+import android.content.Context;
 import android.util.Log;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
+import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.provider.AbstractPersistenceProvider;
-import co.touchlab.android.superbus.utils.FileUtils;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.lang.reflect.Constructor;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,10 +22,12 @@ import java.util.List;
 public abstract class AbstractFilePersistenceProvider extends AbstractPersistenceProvider
 {
     private File filesDir;
+    private Set<Class> checkedCommandClasses = new HashSet<Class>();
 
-    public AbstractFilePersistenceProvider(File filesDir)
+    protected AbstractFilePersistenceProvider(Context context, BusLog log) throws StorageException
     {
-        this.filesDir = filesDir;
+        super(log);
+        this.filesDir = context.getFilesDir();
     }
 
     @Override
@@ -72,49 +73,84 @@ public abstract class AbstractFilePersistenceProvider extends AbstractPersistenc
         return command;
     }
 
+    /**
+     * StoredCommand instances are saved to file storage.  Other commands are simply added.
+     *
+     * @param context
+     * @param command
+     * @throws StorageException
+     */
     @Override
-    public synchronized void put(Command command) throws StorageException
+    public void persistCommand(Context context, Command command)throws StorageException
     {
-        try
+        if(command instanceof StoredCommand)
         {
-            File commands = commandsDirectory();
-            String commandClassName = command.getClass().getName();
-            String fullCommandFileName = commandClassName + "." + System.currentTimeMillis();
+            //Sanity check. StoredCommand classes need a no-arg constructor
+            checkNoArg(command);
 
-            File tempCommandFile = new File(commands, "__" + fullCommandFileName);
-            File finalCommandFile = new File(commands, fullCommandFileName);
+            StoredCommand storedCommand = (StoredCommand) command;
 
-            if(command instanceof StoredCommand)
-                ((StoredCommand)command).setCommandFileName(finalCommandFile.getName());
-
-            storeCommand( command, tempCommandFile);
-
-            boolean success = tempCommandFile.renameTo(finalCommandFile);
-
-            if (!success)
+            try
             {
-                throw new StorageException("Couldn't rename command file");
+                File commands = commandsDirectory();
+                String commandClassName = storedCommand.getClass().getName();
+                String fullCommandFileName = commandClassName + "." + System.currentTimeMillis();
+
+                File tempCommandFile = new File(commands, "__" + fullCommandFileName);
+                File finalCommandFile = new File(commands, fullCommandFileName);
+
+                storedCommand.setCommandFileName(finalCommandFile.getName());
+
+                storeCommand(storedCommand, tempCommandFile);
+
+                boolean success = tempCommandFile.renameTo(finalCommandFile);
+
+                if (!success)
+                {
+                    throw new StorageException("Couldn't rename command file");
+                }
+            }
+            catch (Exception e)
+            {
+                throw new StorageException("Couldn't save command file", e);
             }
         }
-        catch (Exception e)
-        {
-            throw new StorageException("Couldn't save command file", e);
-        }
-
-        super.put(command);
     }
 
-    private Command createCommand(File commandFile)
+    private void checkNoArg(Command command) throws StorageException
+    {
+        if(checkedCommandClasses.contains(command))
+            return;
+
+        boolean isNoArg = false;
+        Class<? extends Command> commandClass = command.getClass();
+        Constructor<?>[] constructors = commandClass.getConstructors();
+
+        for (Constructor<?> constructor : constructors)
+        {
+            if(constructor.getParameterTypes().length == 0)
+            {
+                isNoArg = true;
+                break;
+            }
+        }
+
+        if(!isNoArg)
+            throw new StorageException("All StoredCommand classes must have a no-arg constructor");
+
+        checkedCommandClasses.add(commandClass);
+    }
+
+    private StoredCommand createCommand(File commandFile)
     {
         try
         {
             String commandFileName = commandFile.getName();
             int lastDot = commandFileName.lastIndexOf('.');
             String className = commandFileName.substring(0, lastDot);
-            Command command = inflateCommand(commandFile, commandFileName, className);
+            StoredCommand command = inflateCommand(commandFile, commandFileName, className);
 
-            if(command instanceof StoredCommand)
-                ((StoredCommand)command).setCommandFileName(commandFileName);
+            command.setCommandFileName(commandFileName);
 
             return command;
         }
@@ -127,9 +163,9 @@ public abstract class AbstractFilePersistenceProvider extends AbstractPersistenc
         }
     }
 
-    protected abstract Command inflateCommand(File commandFile, String commandFileName, String className) throws StorageException;
+    protected abstract StoredCommand inflateCommand(File commandFile, String commandFileName, String className) throws StorageException;
 
-    protected abstract void storeCommand(Command command, File tempCommandFile)throws StorageException;
+    protected abstract void storeCommand(StoredCommand command, File tempCommandFile)throws StorageException;
 
     private File commandsDirectory()
     {

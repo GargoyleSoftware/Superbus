@@ -1,5 +1,6 @@
 package co.touchlab.android.superbus.provider.sqlite;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import co.touchlab.android.superbus.Command;
@@ -29,8 +30,8 @@ public class SqlitePersistenceProvider extends AbstractPersistenceProvider
 
     public SqlitePersistenceProvider(BusLog log, SQLiteDatabaseFactory databaseFactory) throws StorageException
     {
+        super(log);
         this.databaseFactory = databaseFactory;
-        init(log);
     }
 
     public void put(Command c) throws StorageException
@@ -74,6 +75,12 @@ public class SqlitePersistenceProvider extends AbstractPersistenceProvider
     }*/
 
     private void delete(Command c)
+    {
+
+    }
+
+    @Override
+    public void persistCommand(Context context, Command c) throws StorageException
     {
 
     }

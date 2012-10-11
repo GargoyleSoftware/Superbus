@@ -33,7 +33,7 @@ public abstract class Command implements Comparable<Command>, Serializable
      *
      * @param exception Exception that caused the removal
      */
-    public void onTransientError(TransientException exception)
+    public void onTransientError(Context context, TransientException exception)
     {
 
     }
@@ -43,7 +43,15 @@ public abstract class Command implements Comparable<Command>, Serializable
      *
      * @param exception Exception that caused the removal
      */
-    public void onPermanentError(PermanentException exception)
+    public void onPermanentError(Context context, PermanentException exception)
+    {
+
+    }
+
+    /**
+     * Success!
+     */
+    public void onSuccess(Context context)
     {
 
     }

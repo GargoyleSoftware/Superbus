@@ -1,11 +1,8 @@
 package co.touchlab.android.superbus.provider;
 
-import android.database.sqlite.SQLiteDatabase;
+import android.content.Context;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
-import co.touchlab.android.superbus.log.BusLog;
-
-import java.util.Collection;
 
 /**
  * User: William Sanville
@@ -17,7 +14,9 @@ import java.util.Collection;
  */
 public interface PersistenceProvider
 {
-    void put(Command c) throws StorageException;
+    void put(Context context, Command c) throws StorageException;
+
+    void persistCommand(Context context, Command c)throws StorageException;
 
     Command getAndRemoveCurrent() throws StorageException;
 

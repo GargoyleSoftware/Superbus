@@ -1,7 +1,6 @@
 package co.touchlab.android.superbus.provider.file;
 
 import co.touchlab.android.superbus.Command;
-import co.touchlab.android.superbus.StorageException;
 
 /**
  * Created with IntelliJ IDEA.

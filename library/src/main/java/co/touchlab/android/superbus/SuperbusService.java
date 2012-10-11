@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.log.BusLogImpl;
@@ -27,6 +28,7 @@ public class SuperbusService extends Service
     private PersistenceProvider provider;
     private SuperbusEventListener eventListener;
     private BusLog log;
+    private Handler mainThreadHandler;
 
     public class LocalBinder extends Binder
     {
@@ -90,6 +92,8 @@ public class SuperbusService extends Service
         provider = checkLoadProvider(getApplication());
         eventListener = checkLoadEventListener(getApplication());
         log.v(TAG, "onCreate " + System.currentTimeMillis());
+
+        mainThreadHandler = new Handler();
     }
 
     @Override
@@ -124,96 +128,165 @@ public class SuperbusService extends Service
 
             Command c;
 
-            int transientCount = 0;
-
-            if(eventListener != null)
-                eventListener.onBusStarted(SuperbusService.this, provider);
-
-            while ((c = grabTop()) != null)
-            {
-                if (!isOnline(SuperbusService.this))
-                {
-                    try
-                    {
-                        provider.put(c);
-                    }
-                    catch (StorageException e1)
-                    {
-                        logPermanentException(c, e1);
-                    }
-                    log.i(TAG, "No network connection. Put off updates.");
-                    break;
-                }
-                log.v(TAG, "CommandThread loop start " + System.currentTimeMillis());
-
-                long delaySleep = 0l;
-
-                try
-                {
-                    callCommand(c);
-                    transientCount = 0;
-                }
-                catch (TransientException e)
-                {
-                    try
-                    {
-                        provider.put(c);
-                        log.e(TAG, null, e);
-                        c.onTransientError(e);
-                        delaySleep = 2000;
-                        transientCount++;
-
-                        //If we have several transient exceptions in a row, break and sleep.
-                        if (transientCount >= 2)
-                            break;
-                    }
-                    catch (StorageException e1)
-                    {
-                        logPermanentException(c, e1);
-                    }
-                }
-                catch (Throwable e)
-                {
-                    logPermanentException(c, e);
-                }
-
-                if (delaySleep > 0)
-                {
-                    try
-                    {
-                        Thread.sleep(delaySleep);
-                    }
-                    catch (InterruptedException e1)
-                    {
-                        log.e(TAG, null, e1);
-                    }
-                }
-
-                log.v(TAG, "CommandThread loop end " + System.currentTimeMillis());
-            }
-
-            //TODO: end of thread needs to be synchronized so we don't stop after another
-            //element has been posted
-            log.i(TAG, "CommandThread loop done");
-            finishThread();
+            boolean forceShutdown;
             try
             {
+                int transientCount = 0;
+                forceShutdown = false;
+
                 if(eventListener != null)
-                    eventListener.onBusFinished(SuperbusService.this, provider, provider.getSize() == 0);
+                    eventListener.onBusStarted(SuperbusService.this, provider);
+
+                while ((c = grabTop()) != null)
+                {
+                    /*if (!isOnline(SuperbusService.this))
+                    {
+                        try
+                        {
+                            provider.put(SuperbusService.this, c);
+                        }
+                        catch (StorageException e1)
+                        {
+                            logPermanentException(c, e1);
+                        }
+                        log.i(TAG, "No network connection. Put off updates.");
+                        break;
+                    }*/
+                    log.v(TAG, "CommandThread loop start " + System.currentTimeMillis());
+
+                    long delaySleep = 0l;
+
+                    try
+                    {
+                        callCommand(c);
+                        c.onSuccess(SuperbusService.this);
+                        transientCount = 0;
+                    }
+                    catch (TransientException e)
+                    {
+                        try
+                        {
+                            provider.put(SuperbusService.this, c);
+                            log.e(TAG, null, e);
+                            c.onTransientError(SuperbusService.this, e);
+                            delaySleep = 2000;
+                            transientCount++;
+
+                            //If we have several transient exceptions in a row, break and sleep.
+                            if (transientCount >= 2)
+                            {
+                                forceShutdown = true;
+                                break;
+                            }
+                        }
+                        catch (StorageException e1)
+                        {
+                            logPermanentException(c, e1);
+                        }
+                    }
+                    catch (Throwable e)
+                    {
+                        logPermanentException(c, e);
+                    }
+
+                    if (delaySleep > 0)
+                    {
+                        try
+                        {
+                            Thread.sleep(delaySleep);
+                        }
+                        catch (InterruptedException e1)
+                        {
+                            log.e(TAG, null, e1);
+                        }
+                    }
+
+                    log.v(TAG, "CommandThread loop end " + System.currentTimeMillis());
+                }
             }
-            catch (StorageException e)
+            catch (Throwable e)
             {
-                log.e(TAG, null, e);
+                log.e(TAG, "Thread ended with exception", e);
+                forceShutdown = true;
             }
-            stopSelf();
+
+            if(forceShutdown)
+            {
+                log.i(TAG, "CommandThread loop done (forced)");
+                finishThread();
+                allDone();
+            }
+            else
+            {
+                //Running wrap up in ui thread.  The concern here is that between the time that the while loop ends,
+                //and the kill logic runs, another command comes in.  The "start" logic would've rejected starting a new
+                //thread.  However, the loop would end, and the command would stay out in the queue.  Data would stay
+                //in play, but wouldn't automatically start processing.  Rare, but frustrating bug.
+                //The assumption here is that either onStartCommand, and this block, would be called in exclusion, so
+                //either the service would be stopped and restarted, or we'd see the new command and restart.
+                //TODO: Should confirm this assumption.
+                mainThreadHandler.post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        log.i(TAG, "CommandThread loop done (natural)");
+                        finishThread();
+
+                        //This is complex.  In the EXTREMELY unlikely case that the call to getSize fails,
+                        //just return 0 and exit.  I honestly have no idea what else we should do here.
+                        //Probably better off to throw up hands and crash app, but willing to take votes on the matter.
+                        int size = 0;
+                        try
+                        {
+                            size = provider.getSize();
+                        }
+                        catch (StorageException e)
+                        {
+                            log.e(TAG, null, e);
+                        }
+
+                        //Extremely unlikely, but still.
+                        if(size > 0)
+                        {
+                            checkAndStart();
+                        }
+                        else
+                        {
+                            allDone();
+                        }
+                    }
+                });
+            }
+
         }
 
         private void logPermanentException(Command c, Throwable e)
         {
             log.e(TAG, null, e);
             PermanentException pe = e instanceof PermanentException ? (PermanentException)e : new PermanentException(e);
-            c.onPermanentError(pe);
+            c.onPermanentError(SuperbusService.this, pe);
         }
+    }
+
+    /**
+     * Finally shut down.  This should ONLY be in the main UI thread.  Presumably, if we call stopSelf here,
+     * and another call comes in right after, the service will be restarted.  If that assumption is incorrect,
+     * there's the remote possibility that a command will not be processed right away, but it SHOULD still
+     * stick around, so at worst the processing will be delayed.
+     */
+    private void allDone()
+    {
+        try
+        {
+            if(eventListener != null)
+                eventListener.onBusFinished(SuperbusService.this, provider, provider.getSize() == 0);
+        }
+        catch (StorageException e)
+        {
+            log.e(TAG, null, e);
+        }
+        stopSelf();
     }
 
     private synchronized void finishThread()

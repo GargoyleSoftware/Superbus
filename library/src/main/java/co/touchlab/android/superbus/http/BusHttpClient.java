@@ -3,7 +3,10 @@ package co.touchlab.android.superbus.http;
 import android.os.Build;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
-import com.turbomanage.httpclient.*;
+import com.turbomanage.httpclient.AbstractHttpClient;
+import com.turbomanage.httpclient.BasicRequestHandler;
+import com.turbomanage.httpclient.HttpRequestException;
+import com.turbomanage.httpclient.HttpResponse;
 
 /**
  * Use this http client wrapper to make server calls.  It should understand the difference between transient and permanent exception

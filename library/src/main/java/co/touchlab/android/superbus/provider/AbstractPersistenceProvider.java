@@ -1,14 +1,16 @@
 package co.touchlab.android.superbus.provider;
 
+import android.content.Context;
 import android.util.Log;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
 import co.touchlab.android.superbus.SuperbusService;
 import co.touchlab.android.superbus.log.BusLog;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.PriorityQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,31 +25,57 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
     private boolean initCalled = false;
     private BusLog log;
 
-    @Override
-    public synchronized void put(Command c) throws StorageException
+    //DO NOT MAKE THIS MULTIPLE
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    protected AbstractPersistenceProvider(BusLog log)
     {
-        checkInitCalled();
+        this.log = log;
+    }
 
-        for (Command command : commandQueue)
+    @Override
+    public final synchronized void put(final Context context, final Command c) throws StorageException
+    {
+        executorService.submit(new Runnable()
         {
-            if(command.same(c))
-                return;
-        }
+            @Override
+            public void run()
+            {
+                loadInitialCommands();
 
-        commandQueue.add(c);
+                for (Command command : commandQueue)
+                {
+                    if(command.same(c))
+                        return;
+                }
+
+                try
+                {
+                    persistCommand(context, c);
+                }
+                catch (StorageException e)
+                {
+                    throw new RuntimeException(e);
+                }
+
+                commandQueue.add(c);
+
+                SuperbusService.notifyStart(context);
+            }
+        });
     }
 
     @Override
     public synchronized Command getAndRemoveCurrent() throws StorageException
     {
-        checkInitCalled();
+        loadInitialCommands();
         return commandQueue.poll();
     }
 
     @Override
     public int getSize() throws StorageException
     {
-        checkInitCalled();
+        loadInitialCommands();
         return commandQueue.size();
     }
 
@@ -70,29 +98,37 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
         }
     }
 
-    public void init(BusLog log) throws StorageException
+    /**
+     * Load all commands from storage.
+     */
+    private synchronized void loadInitialCommands()
     {
-        this.log = log;
-        Collection<? extends Command> c = loadAll();
+        if(initCalled)
+            return;
+
+        Collection<? extends Command> c = null;
+        try
+        {
+            c = loadAll();
+        }
+        catch (StorageException e)
+        {
+            throw new RuntimeException(e);
+        }
         if(c != null)
             commandQueue.addAll(c);
+
         initCalled = true;
     }
 
-    private void checkInitCalled() throws StorageException
+    public void putAll(Context context, Collection<Command> collection) throws StorageException
     {
-        if(!initCalled)
-            throw new StorageException("Init must be called before other operations");
-    }
-
-    public void putAll(Collection<Command> collection) throws StorageException
-    {
-        checkInitCalled();
+        loadInitialCommands();
         synchronized (commandQueue)
         {
             for (Command command : collection)
             {
-                put(command);
+                put(context, command);
             }
         }
     }
