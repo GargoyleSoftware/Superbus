@@ -1,0 +1,93 @@
+package co.touchlab.android.superbus.example;
+
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.widget.Toast;
+import co.touchlab.android.superbus.Command;
+import co.touchlab.android.superbus.PermanentException;
+import co.touchlab.android.superbus.TransientException;
+import co.touchlab.android.superbus.http.BusHttpClient;
+import co.touchlab.android.superbus.provider.file.StoredCommand;
+import com.turbomanage.httpclient.BasicHttpClient;
+import com.turbomanage.httpclient.HttpResponse;
+import com.turbomanage.httpclient.ParameterMap;
+
+/**
+ * Created with IntelliJ IDEA.
+ * User: kgalligan
+ * Date: 10/11/12
+ * Time: 5:26 AM
+ * To change this template use File | Settings | File Templates.
+ */
+public class PostMessageCommand extends StoredCommand
+{
+    String message;
+
+    public PostMessageCommand()
+    {
+    }
+
+    public PostMessageCommand(String message)
+    {
+        this.message = message;
+    }
+
+    /**
+     * This is for your benefit.  Put whatever is going to help debugging.
+     *
+     * @return
+     */
+    @Override
+    public String logSummary()
+    {
+        return "PostMessageCommand["+ message +"]";
+    }
+
+    /**
+     * Some commands are duplicates.  For example, if you had a "refresh data" command, you might add it from multiple
+     * places, but only need one.  Sort of like java equals method, but not exactly.
+     *
+     * In this case, each message post should be kept, so always return false.
+     *
+     * @param command
+     * @return
+     */
+    @Override
+    public boolean same(Command command)
+    {
+        return false;
+    }
+
+    @Override
+    public void callCommand(Context context) throws TransientException, PermanentException
+    {
+        BusHttpClient httpClient = new BusHttpClient("http://wejit.herokuapp.com");
+
+        ParameterMap params = httpClient.newParams().add("message", message);
+
+        httpClient.setConnectionTimeout(10000);
+        HttpResponse httpResponse = httpClient.post("/device/addExamplePost", params);
+
+        //Check if anything went south
+        httpClient.checkAndThrowError();
+    }
+
+    @Override
+    public void onPermanentError(Context context, PermanentException exception)
+    {
+        CommandErrorReceiver.showMessage(context, "Permanent Error");
+    }
+
+    @Override
+    public void onTransientError(Context context, TransientException exception)
+    {
+        CommandErrorReceiver.showMessage(context, "Transient Error");
+    }
+
+    @Override
+    public void onSuccess(Context context)
+    {
+        CommandErrorReceiver.showMessage(context, "Success");
+    }
+}

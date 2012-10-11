@@ -18,19 +18,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:text="Single command"/>
-        <Button
-                android:id="@+id/backgroundAddButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Add commands from background"/>
 
-        <Button
-                android:id="@+id/backgroundFailButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Failure inside transaction"/>
     </LinearLayout>
 </ScrollView>
 
