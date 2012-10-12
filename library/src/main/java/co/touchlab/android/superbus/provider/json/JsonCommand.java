@@ -10,7 +10,7 @@ import org.json.JSONObject;
  * Time: 3:35 AM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class JSONCommand extends StoredCommand
+public abstract class JsonCommand extends StoredCommand
 {
     public abstract void inflate(JSONObject json);
 

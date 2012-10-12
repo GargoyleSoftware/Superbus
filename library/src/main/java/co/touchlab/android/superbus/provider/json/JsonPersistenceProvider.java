@@ -20,14 +20,14 @@ import java.io.FileWriter;
  * Time: 3:38 AM
  * To change this template use File | Settings | File Templates.
  */
-public class JSONPersistenceProvider extends AbstractFilePersistenceProvider
+public class JsonPersistenceProvider extends AbstractFilePersistenceProvider
 {
-    public JSONPersistenceProvider(Context context) throws StorageException
+    public JsonPersistenceProvider(Context context) throws StorageException
     {
         this(context, new BusLogImpl());
     }
 
-    public JSONPersistenceProvider(Context c, BusLog log) throws StorageException
+    public JsonPersistenceProvider(Context c, BusLog log) throws StorageException
     {
         super(c, log);
     }
