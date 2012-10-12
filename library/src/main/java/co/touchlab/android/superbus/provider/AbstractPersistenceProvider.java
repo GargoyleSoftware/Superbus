@@ -8,6 +8,7 @@ import co.touchlab.android.superbus.SuperbusService;
 import co.touchlab.android.superbus.log.BusLog;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,6 +66,22 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
         });
     }
 
+    public final synchronized void sendMessage(String message)
+    {
+        for (Command command : commandQueue)
+        {
+            command.onRuntimeMessage(message);
+        }
+    }
+
+    public final synchronized void sendMessage(String message, Map args)
+    {
+        for (Command command : commandQueue)
+        {
+            command.onRuntimeMessage(message, args);
+        }
+    }
+
     @Override
     public synchronized Command getAndRemoveCurrent() throws StorageException
     {
@@ -75,7 +92,7 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
     @Override
     public int getSize() throws StorageException
     {
-        loadInitialCommands();
+        loadInitialCommands();     //TODO: Not sure this is right
         return commandQueue.size();
     }
 
