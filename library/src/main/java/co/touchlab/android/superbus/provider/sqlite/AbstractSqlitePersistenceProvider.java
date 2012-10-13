@@ -24,75 +24,17 @@ import java.util.List;
  * Date: 8/24/12
  * Time: 1:12 AM
  */
-public class SqlitePersistenceProvider extends AbstractPersistenceProvider
+public abstract class AbstractSqlitePersistenceProvider extends AbstractPersistenceProvider
 {
     public static final String TABLE_NAME = "__SQL_PERS_PROV";
     public static final String COLUMNS = "id INTEGER PRIMARY KEY AUTOINCREMENT, type VARCHAR, json VARCHAR, priority VARCHAR";
     public static final String[] COLUMN_LIST = {"id", "type", "json", "priority"};
     private SQLiteDatabaseFactory databaseFactory;
-    private List<Command> transactionBatch;
 
-    public SqlitePersistenceProvider(BusLog log, SQLiteDatabaseFactory databaseFactory) throws StorageException
+    public AbstractSqlitePersistenceProvider(BusLog log, SQLiteDatabaseFactory databaseFactory) throws StorageException
     {
         super(log);
         this.databaseFactory = databaseFactory;
-    }
-
-    public void put(Command c) throws StorageException
-    {
-        if(inBatch())
-        {
-            transactionBatch.add(c);
-        }
-        else
-        {
-
-        }
-    }
-
-    public void putAll(Collection<Command> c)
-    {
-        if(inBatch())
-        {
-            transactionBatch.addAll(c);
-        }
-        else
-        {
-
-        }
-    }
-
-    private void insert(Command c)
-    {
-
-    }
-
-    private boolean inBatch()
-    {
-        return transactionBatch != null;
-    }
-
-   /* @Override
-    public void remove(Command c, boolean successful) throws StorageException
-    {
-
-    }*/
-
-    private void delete(Command c)
-    {
-
-    }
-
-    @Override
-    public void persistCommand(Context context, Command c) throws StorageException
-    {
-
-    }
-
-    @Override
-    public Command getAndRemoveCurrent() throws StorageException
-    {
-        return null;
     }
 
     @Override
@@ -107,6 +49,24 @@ public class SqlitePersistenceProvider extends AbstractPersistenceProvider
         }
         return null;
     }
+
+    @Override
+    public Command getAndRemoveCurrent() throws StorageException
+    {
+        Command command = super.getAndRemoveCurrent();
+        removeCommand(command);
+        return command;
+    }
+
+    @Override
+    public void persistCommand(Context context, Command c) throws StorageException
+    {
+
+    }
+
+
+
+
 
     private StoredCommand loadFromCursor(Cursor c) throws Exception
     {
@@ -127,25 +87,7 @@ public class SqlitePersistenceProvider extends AbstractPersistenceProvider
         }
     }
 
-    public void clearTransactionBatch()
-    {
-        transactionBatch = null;
-    }
 
-    public void beginTransactionBatch() throws StorageException
-    {
-        if(transactionBatch != null)
-            throw new StorageException("Previous transaction not closed");
-
-        transactionBatch = new ArrayList<Command>();
-    }
-
-    public void applyTransactionBatch()
-    {
-        List<Command> localBatch = transactionBatch;
-        clearTransactionBatch();
-        putAll(localBatch);
-    }
 
     public void createTables(SQLiteDatabase database)
     {

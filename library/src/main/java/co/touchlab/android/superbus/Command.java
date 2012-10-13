@@ -34,6 +34,7 @@ public abstract class Command implements Comparable<Command>, Serializable
 
     private int priority = DEFAULT_PRIORITY;
     private long added = System.currentTimeMillis();
+    private int transientExceptionCount = 0;
 
     /**
      * This is for your benefit.  Command info will be logged during various events.
@@ -57,10 +58,14 @@ public abstract class Command implements Comparable<Command>, Serializable
      *
      * "Soft" issues should throw a TransientException.  This is almost always due to temporary network issues.  These
      * will cause the command to be put back on the queue, and processing to stop.  This preserves the command so its not
-     * dropped.  HOWEVER!!!  If you throw a TransientException for something that won't resolve itself, it will NEVER be
-     * removed.  You will build up commands forever, and (worse) stop further processing.
+     * dropped.  HOWEVER!!!  If you throw a TransientException for something that won't resolve itself, by default
+     * it will NEVER be removed.  You will build up commands forever, and (worse) stop further processing.
      *
-     * Also, if processing is stopped due to a TransientException, some other event will be required to restart processing.
+     * To eventually quit command processing attempts, use a custom implementation of CommandPurgePolicy.
+     *
+     * Also, if processing is stopped due to a TransientException, that command and possibly others will remain
+     * in the queue.  Some other event will be required to restart processing.  Either manual, or a network connection
+     * listener.
      *
      * "Hard" issues should throw a PermanentException.  This will remove the command, and call onPermanentError.  Your
      * code will need to deal with the error.  Possibly show a notification to the user, revert DB changes, etc.  Processing
@@ -181,6 +186,16 @@ public abstract class Command implements Comparable<Command>, Serializable
     public void setAdded(long added)
     {
         this.added = added;
+    }
+
+    public int getTransientExceptionCount()
+    {
+        return transientExceptionCount;
+    }
+
+    public void setTransientExceptionCount(int transientExceptionCount)
+    {
+        this.transientExceptionCount = transientExceptionCount;
     }
 
     public int compareTo(Command command)

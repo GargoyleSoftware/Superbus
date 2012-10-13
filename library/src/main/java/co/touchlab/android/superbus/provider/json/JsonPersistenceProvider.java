@@ -6,6 +6,7 @@ import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.log.BusLogImpl;
 import co.touchlab.android.superbus.provider.file.AbstractFilePersistenceProvider;
 import co.touchlab.android.superbus.provider.file.StoredCommand;
+import co.touchlab.android.superbus.utils.IOUtils;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -22,6 +23,9 @@ import java.io.FileWriter;
  */
 public class JsonPersistenceProvider extends AbstractFilePersistenceProvider
 {
+
+    private JsonStoredCommandAdapter commandAdapter;
+
     public JsonPersistenceProvider(Context context) throws StorageException
     {
         this(context, new BusLogImpl());
@@ -30,27 +34,26 @@ public class JsonPersistenceProvider extends AbstractFilePersistenceProvider
     public JsonPersistenceProvider(Context c, BusLog log) throws StorageException
     {
         super(c, log);
+        commandAdapter = new JsonStoredCommandAdapter();
     }
 
     @Override
     protected StoredCommand inflateCommand(File commandFile, String commandFileName, String className) throws StorageException
     {
-        JsonCommand jsonCommand;
         try
         {
             FileReader reader = new FileReader(commandFile);
-            JSONObject json= (JSONObject) new JSONTokener(reader).nextValue();
-            reader.close();
-            Object o = Class.forName(className).newInstance();
-            jsonCommand = (JsonCommand) o;
-            jsonCommand.inflate(json);
+            String jsonString = IOUtils.toString(reader);
+            return commandAdapter.inflateCommand(jsonString, className);
+        }
+        catch (StorageException e)
+        {
+            throw e;
         }
         catch (Exception e)
         {
             throw new StorageException(e);
         }
-
-        return jsonCommand;
     }
 
     @Override
@@ -58,11 +61,13 @@ public class JsonPersistenceProvider extends AbstractFilePersistenceProvider
     {
         try
         {
-            JSONObject json = new JSONObject();
-            ((JsonCommand)command).store(json);
             FileWriter output = new FileWriter(file);
-            output.write(json.toString());
+            output.write(commandAdapter.storeCommand(command));
             output.close();
+        }
+        catch (StorageException e)
+        {
+            throw e;
         }
         catch (Exception e)
         {

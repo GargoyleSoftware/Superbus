@@ -1,5 +1,6 @@
 package co.touchlab.android.superbus.provider;
 
+import co.touchlab.android.superbus.CommandPurgePolicy;
 import co.touchlab.android.superbus.SuperbusEventListener;
 import co.touchlab.android.superbus.log.BusLog;
 
@@ -27,4 +28,9 @@ public interface PersistedApplication
      * @return Bus lifecycle event listener.  Can, and will usually be, null.  To enable/disable network restart processing, use ConnectionChangeBusEventListener.
      */
     SuperbusEventListener getEventListener();
+
+    /**
+     * @return Return a custom purge policy. Can be null.
+     */
+    CommandPurgePolicy getCommandPurgePolicy();
 }

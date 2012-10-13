@@ -28,6 +28,7 @@ public class SuperbusService extends Service
     private CommandThread thread;
     private PersistenceProvider provider;
     private SuperbusEventListener eventListener;
+    private CommandPurgePolicy commandPurgePolicy;
     private BusLog log;
     private Handler mainThreadHandler;
 
@@ -93,8 +94,10 @@ public class SuperbusService extends Service
     public void onCreate()
     {
         super.onCreate();
+
         provider = checkLoadProvider(getApplication());
         eventListener = checkLoadEventListener(getApplication());
+        commandPurgePolicy = checkLoadCommandPurgePolicy(getApplication());
         log.v(TAG, "onCreate " + System.currentTimeMillis());
 
         mainThreadHandler = new Handler();
@@ -164,9 +167,22 @@ public class SuperbusService extends Service
                     {
                         try
                         {
-                            provider.put(SuperbusService.this, c);
                             log.e(TAG, null, e);
-                            c.onTransientError(SuperbusService.this, e);
+                            c.setTransientExceptionCount(c.getTransientExceptionCount() + 1);
+
+                            boolean purge = commandPurgePolicy.purgeCommandOnTransientException(c, e);
+
+                            if(purge)
+                            {
+                                log.w(TAG, "Purging command on TransientException: {" + c.logSummary() +"}");
+                                c.onPermanentError(SuperbusService.this, new PermanentException(e));
+                            }
+                            else
+                            {
+                                provider.put(SuperbusService.this, c);
+                                c.onTransientError(SuperbusService.this, e);
+                            }
+
                             delaySleep = 2000;
                             transientCount++;
 
@@ -345,6 +361,23 @@ public class SuperbusService extends Service
             PersistedApplication persistedApplication = (PersistedApplication) application;
 
             return persistedApplication.getEventListener();
+        }
+
+        return null;
+    }
+
+    public CommandPurgePolicy checkLoadCommandPurgePolicy(Application application)
+    {
+        if (application instanceof PersistedApplication)
+        {
+            PersistedApplication persistedApplication = (PersistedApplication) application;
+
+            CommandPurgePolicy purgePolicy = persistedApplication.getCommandPurgePolicy();
+
+            if(purgePolicy == null)
+                purgePolicy = new TransientMethuselahCommandPurgePolicy();
+
+            return purgePolicy;
         }
 
         return null;

@@ -6,7 +6,8 @@ package co.touchlab.android.superbus;
  * was an issue with the network.
  *
  * BE VERY CAREFUL!!!  If your code throws this in a situation that you can't actually resolve,
- * your command will stay around forever, and latter commands will never be processed.
+ * by default your command will stay around forever, and latter commands will never be processed.  Implement a custom
+ * CommandPurgePolicy to cancel further attempts after some time or number of retry attempts.
  *
  * User: kgalligan
  * Date: 1/11/12

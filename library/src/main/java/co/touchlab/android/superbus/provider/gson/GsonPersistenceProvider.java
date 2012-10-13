@@ -27,6 +27,8 @@ import java.io.FileWriter;
  */
 public class GsonPersistenceProvider extends AbstractFilePersistenceProvider
 {
+    private GsonStoredCommandAdapter commandAdapter;
+
     public GsonPersistenceProvider(Context c) throws StorageException
     {
         this(c, new BusLogImpl());
@@ -35,6 +37,7 @@ public class GsonPersistenceProvider extends AbstractFilePersistenceProvider
     public GsonPersistenceProvider(Context c, BusLog log) throws StorageException
     {
         super(c, log);
+        commandAdapter = new GsonStoredCommandAdapter();
     }
 
     @Override
@@ -42,11 +45,12 @@ public class GsonPersistenceProvider extends AbstractFilePersistenceProvider
     {
         try
         {
-            Object returnedCommand = null;
             FileReader input = new FileReader(file);
-            returnedCommand = new Gson().fromJson(IOUtils.toString(input), Class.forName(className));
-            input.close();
-            return (StoredCommand) returnedCommand;
+            return commandAdapter.inflateCommand(IOUtils.toString(input), className);
+        }
+        catch (StorageException e)
+        {
+            throw e;
         }
         catch (Exception e)
         {
@@ -59,10 +63,14 @@ public class GsonPersistenceProvider extends AbstractFilePersistenceProvider
     {
         try
         {
-            String jsonData = new Gson().toJson(command, command.getClass());
+            String jsonData = commandAdapter.storeCommand(command);
             FileWriter output = new FileWriter(file);
             output.write(jsonData);
             output.close();
+        }
+        catch (StorageException e)
+        {
+            throw e;
         }
         catch (Exception e)
         {
