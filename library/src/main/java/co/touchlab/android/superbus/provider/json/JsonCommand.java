@@ -4,11 +4,13 @@ import co.touchlab.android.superbus.provider.file.StoredCommand;
 import org.json.JSONObject;
 
 /**
- * Created with IntelliJ IDEA.
+ * Raw json command storage.  Gson will be simpler, but if you want full control, use this.
+ *
+ * Only compatible with JsonPersistenceProvider.
+ *
  * User: kgalligan
  * Date: 10/11/12
  * Time: 3:35 AM
- * To change this template use File | Settings | File Templates.
  */
 public abstract class JsonCommand extends StoredCommand
 {

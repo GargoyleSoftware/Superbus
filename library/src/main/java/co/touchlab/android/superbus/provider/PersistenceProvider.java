@@ -5,12 +5,14 @@ import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
 
 /**
+ * Provides persistence for commands, and the interface that the bus works with to get
+ * commands.  In almost all cases, you should not implement this yourself.  Complex dynamics.
+ *
+ * Use AbstractPersistenceProvider or some derivative instead.
+ *
  * User: William Sanville
  * Date: 8/16/12
  * Time: 1:58 PM
- * A SuperbusService will have some implementation of this, to interface with a database for example.
- * <p/>
- * Note: Implementations of this interface should expect calls to these methods to happen from multiple threads!
  */
 public interface PersistenceProvider
 {

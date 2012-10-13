@@ -9,22 +9,23 @@ import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.log.BusLogImpl;
 import co.touchlab.android.superbus.provider.PersistedApplication;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
 
 /**
- * The heart of the command bus.  Processes commands.
+ * Highly experimental.  Allow some commands to process in parallel.
+ * DO NOT USE YET!!!  Feature still needs to be finished.  Should be in a branch,
+ * but wasn't feeling it just yet.
  *
  * User: kgalligan
- * Date: 1/11/12
+ * Date: 10/12/12
  * Time: 8:57 AM
  */
-public class SuperbusService extends Service
+public class ConcurrentSuperbusService extends Service
 {
-    public static final String TAG = SuperbusService.class.getSimpleName();
+    public static final String TAG = ConcurrentSuperbusService.class.getSimpleName();
     private CommandThread thread;
     private PersistenceProvider provider;
     private SuperbusEventListener eventListener;
@@ -33,9 +34,9 @@ public class SuperbusService extends Service
 
     public class LocalBinder extends Binder
     {
-        public SuperbusService getService()
+        public ConcurrentSuperbusService getService()
         {
-            return SuperbusService.this;
+            return ConcurrentSuperbusService.this;
         }
     }
 
@@ -59,8 +60,7 @@ public class SuperbusService extends Service
     {
         try
         {
-            if(log.isLoggable(TAG, Log.DEBUG))
-                log.d(TAG, methodName + ": " + command.getAdded() + " : " + command.logSummary());
+            log.i(TAG, methodName + ": " + command.getAdded() + " : " + command.logSummary());
         }
         catch (Exception e)
         {
@@ -82,8 +82,6 @@ public class SuperbusService extends Service
         }
         catch (StorageException e)
         {
-            //TODO: A StorageException here should really trigger a command removal.
-
             log.e(TAG, null, e);
             return null;
         }
@@ -92,12 +90,14 @@ public class SuperbusService extends Service
     @Override
     public void onCreate()
     {
-        super.onCreate();
+        throw new UnsupportedOperationException("Not functional yet...");
+
+        /*super.onCreate();
         provider = checkLoadProvider(getApplication());
         eventListener = checkLoadEventListener(getApplication());
         log.v(TAG, "onCreate " + System.currentTimeMillis());
 
-        mainThreadHandler = new Handler();
+        mainThreadHandler = new Handler();*/
     }
 
     @Override
@@ -116,6 +116,13 @@ public class SuperbusService extends Service
         }
     }
 
+    public static boolean isOnline(Context context)
+    {
+        ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+    }
+
     private class CommandThread extends Thread
     {
         @Override
@@ -132,11 +139,10 @@ public class SuperbusService extends Service
                 forceShutdown = false;
 
                 if(eventListener != null)
-                    eventListener.onBusStarted(SuperbusService.this, provider);
+                    eventListener.onBusStarted(ConcurrentSuperbusService.this, provider);
 
                 while ((c = grabTop()) != null)
                 {
-                    //TODO: should add a listener call, and check network connectivity in there.
                     /*if (!isOnline(SuperbusService.this))
                     {
                         try
@@ -157,16 +163,16 @@ public class SuperbusService extends Service
                     try
                     {
                         callCommand(c);
-                        c.onSuccess(SuperbusService.this);
+                        c.onSuccess(ConcurrentSuperbusService.this);
                         transientCount = 0;
                     }
                     catch (TransientException e)
                     {
                         try
                         {
-                            provider.put(SuperbusService.this, c);
+                            provider.put(ConcurrentSuperbusService.this, c);
                             log.e(TAG, null, e);
-                            c.onTransientError(SuperbusService.this, e);
+                            c.onTransientError(ConcurrentSuperbusService.this, e);
                             delaySleep = 2000;
                             transientCount++;
 
@@ -263,7 +269,96 @@ public class SuperbusService extends Service
         {
             log.e(TAG, null, e);
             PermanentException pe = e instanceof PermanentException ? (PermanentException)e : new PermanentException(e);
-            c.onPermanentError(SuperbusService.this, pe);
+            c.onPermanentError(ConcurrentSuperbusService.this, pe);
+        }
+    }
+
+    private class ProcessCommand implements Runnable
+    {
+        private Command command;
+        private boolean success = false;
+
+        private ProcessCommand(Command command)
+        {
+            this.command = command;
+        }
+
+        public Command getCommand()
+        {
+            return command;
+        }
+
+        public boolean isSuccess()
+        {
+            return success;
+        }
+
+        public boolean isForceShutdown()
+        {
+            return command != null && !success;
+        }
+
+        @Override
+        public void run()
+        {
+            long delaySleep = 0l;
+            int transientCount = 0;
+
+            while (command != null)
+            {
+                try
+                {
+                    callCommand(command);
+                    command.onSuccess(ConcurrentSuperbusService.this);
+                    command = null;
+                    success = true;
+                }
+                catch (TransientException e)
+                {
+                    try
+                    {
+                        provider.put(ConcurrentSuperbusService.this, command);
+                        log.e(TAG, null, e);
+                        command.onTransientError(ConcurrentSuperbusService.this, e);
+                        delaySleep = 2000;
+                        transientCount++;
+
+                        //If we have several transient exceptions in a row, break and sleep.
+                        if (transientCount >= 2)
+                        {
+                            break;
+                        }
+                    }
+                    catch (StorageException e1)
+                    {
+                        postPermanentException(command, e1);
+                    }
+                }
+                catch (Throwable e)
+                {
+                    postPermanentException(command, e);
+                }
+
+                if (delaySleep > 0)
+                {
+                    try
+                    {
+                        Thread.sleep(delaySleep);
+                    }
+                    catch (InterruptedException e1)
+                    {
+                        log.e(TAG, null, e1);
+                    }
+                }
+            }
+        }
+
+        private void postPermanentException(Command command, Throwable e)
+        {
+            log.e(TAG, null, e);
+            PermanentException pe = e instanceof PermanentException ? (PermanentException)e : new PermanentException(e);
+            command.onPermanentError(ConcurrentSuperbusService.this, pe);
+            this.command = null;
         }
     }
 
@@ -278,7 +373,7 @@ public class SuperbusService extends Service
         try
         {
             if(eventListener != null)
-                eventListener.onBusFinished(SuperbusService.this, provider, provider.getSize() == 0);
+                eventListener.onBusFinished(ConcurrentSuperbusService.this, provider, provider.getSize() == 0);
         }
         catch (StorageException e)
         {
@@ -350,13 +445,8 @@ public class SuperbusService extends Service
         return null;
     }
 
-    /**
-     * Call to manually trigger bus processing.
-     *
-     * @param c Standard Android Context
-     */
     public static void notifyStart(Context c)
     {
-        c.startService(new Intent(c, SuperbusService.class));
+        c.startService(new Intent(c, ConcurrentSuperbusService.class));
     }
 }

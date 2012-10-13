@@ -3,11 +3,11 @@ package co.touchlab.android.superbus.log;
 import android.util.Log;
 
 /**
- * Created with IntelliJ IDEA.
+ * Standard LogCat implementation of BusLog.
+ *
  * User: kgalligan
  * Date: 9/8/12
  * Time: 1:07 PM
- * To change this template use File | Settings | File Templates.
  */
 public class BusLogImpl implements BusLog
 {

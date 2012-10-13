@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
  * User: kgalligan
  * Date: 9/4/12
  * Time: 12:26 AM
- * To change this template use File | Settings | File Templates.
  */
 public interface SQLiteDatabaseFactory
 {

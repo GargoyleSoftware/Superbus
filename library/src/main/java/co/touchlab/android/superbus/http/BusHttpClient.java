@@ -9,11 +9,15 @@ import com.turbomanage.httpclient.HttpRequestException;
 import com.turbomanage.httpclient.HttpResponse;
 
 /**
- * Use this http client wrapper to make server calls.  It should understand the difference between transient and permanent exception
+ * Use this http client wrapper to make server calls.  It should understand the difference between transient and permanent exceptions.
+ *
+ * For best practice network calls, you should generally use http://code.google.com/p/basic-http-client/
+ *
+ * It wraps http network calls.  Works nice.
+ *
  * User: kgalligan
  * Date: 10/6/12
  * Time: 11:53 PM
- * To change this template use File | Settings | File Templates.
  */
 public class BusHttpClient extends AbstractHttpClient
 {

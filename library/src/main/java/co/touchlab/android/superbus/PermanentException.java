@@ -1,11 +1,13 @@
 package co.touchlab.android.superbus;
 
 /**
- * Created by IntelliJ IDEA.
+ * Thrown by commands, interpreted by the bus.  A PermanentException exception means you had a "hard"
+ * issue.  It is not likely to self-resolve.  This will cause the command to be removed, onPermanentError to be called
+ * on the command, and processing on other commands will continue.
+ *
  * User: kgalligan
  * Date: 1/11/12
  * Time: 9:33 AM
- * To change this template use File | Settings | File Templates.
  */
 public class PermanentException extends Exception
 {

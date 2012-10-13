@@ -3,11 +3,9 @@ package co.touchlab.android.superbus.utils;
 import java.io.*;
 
 /**
- * Created with IntelliJ IDEA.
  * User: kgalligan
  * Date: 9/4/12
  * Time: 5:16 PM
- * To change this template use File | Settings | File Templates.
  */
 public class FileUtils
 {

@@ -1,11 +1,12 @@
 package co.touchlab.android.superbus.log;
 
 /**
- * Created with IntelliJ IDEA.
+ * Log interface used in the bus. The standard implementation simply calls LogCat,
+ * but custom implementations can be provided.
+ *
  * User: kgalligan
  * Date: 9/8/12
  * Time: 1:06 PM
- * To change this template use File | Settings | File Templates.
  */
 public interface BusLog
 {

@@ -13,11 +13,12 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
+ * PersistenceProvider to be used when commands should be stored as files.  There are a few implementations
+ * included with this package, for json and gson, but use this for your own file formats.
+ *
  * User: kgalligan
  * Date: 9/4/12
  * Time: 2:32 PM
- * To change this template use File | Settings | File Templates.
  */
 public abstract class AbstractFilePersistenceProvider extends AbstractPersistenceProvider
 {
@@ -163,8 +164,30 @@ public abstract class AbstractFilePersistenceProvider extends AbstractPersistenc
         }
     }
 
+    /**
+     * Load the command from a file.  You will need to parse your own data format.
+     *
+     * @param commandFile File reference to the command data file.
+     * @param commandFileName Name of the file (TODO: remove this. Can derive from commandFile arg)
+     * @param className Name of the class this data file represents.
+     * @return Inflated StoredCommand subclass instance.
+     * @throws StorageException
+     */
     protected abstract StoredCommand inflateCommand(File commandFile, String commandFileName, String className) throws StorageException;
 
+    /**
+     * Store the command in a file.  Persist your command in a file with your proprietary format.
+     *
+     * File is stored as "tempCommandFile".  The actual persisted file reference will have a different name,
+     * so do not try to store this anywhere (not sure why you would, but don't).  After this method completes,
+     * the file is renamed to its permanent name.  This is an attempt to avoid partial writes due to process shutdown.
+     *
+     * TODO: Review is file renames are atomic in Android/Linux file system.
+     *
+     * @param command The command to be stored.
+     * @param tempCommandFile The file to store the data in.
+     * @throws StorageException
+     */
     protected abstract void storeCommand(StoredCommand command, File tempCommandFile)throws StorageException;
 
     private File commandsDirectory()

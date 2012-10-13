@@ -7,11 +7,14 @@ import co.touchlab.android.superbus.SuperbusEventListener;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
 
 /**
- * Created with IntelliJ IDEA.
+ * The bus can be set up to automatically continue processing when the network
+ * reconnects.  However, if you don't have any active commands, restarting the bus
+ * is probably overkill.  This listener will enable/disable the BroadcastReceiver
+ * after checking the current command count.  If zero, it is disabled.
+ *
  * User: kgalligan
  * Date: 10/8/12
  * Time: 10:59 PM
- * To change this template use File | Settings | File Templates.
  */
 public class ConnectionChangeBusEventListener implements SuperbusEventListener
 {

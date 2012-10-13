@@ -9,11 +9,13 @@ import co.touchlab.android.superbus.provider.AbstractPersistenceProvider;
 import java.util.Collection;
 
 /**
- * Created with IntelliJ IDEA.
+ * If you don't care about persisting commands, this is the way to go.  Once the VM process shuts down,
+ * the commands disappear.  Much faster and more lightweight than the actual persisted variety.
+ *
+ *
  * User: kgalligan
  * Date: 9/3/12
  * Time: 11:59 PM
- * To change this template use File | Settings | File Templates.
  */
 public class MemoryPersistenceProvider extends AbstractPersistenceProvider
 {

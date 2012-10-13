@@ -14,11 +14,15 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
+ * THIS IS NOT READY.  Coming soon.
+ *
+ * If you are doing the bulk of your data processing in SQLite, you might want to use this.
+ *
+ * If done correctly, you can put your command storage in the same transaction as your data storage.
+ *
  * User: kgalligan
  * Date: 8/24/12
  * Time: 1:12 AM
- * To change this template use File | Settings | File Templates.
  */
 public class SqlitePersistenceProvider extends AbstractPersistenceProvider
 {

@@ -14,11 +14,16 @@ import java.io.FileReader;
 import java.io.FileWriter;
 
 /**
- * Created with IntelliJ IDEA.
+ * Command data stored as json, storing and inflating handled by http://code.google.com/p/google-gson/
+ *
+ * Be careful about the data you put in here.  ANYTHING in the class will be saved.  If a value should
+ * not be saved, make sure to mark it 'transient'.
+ *
+ * BTW, if you're just getting started and don't know what to use, this is highly recommended.
+ *
  * User: kgalligan
  * Date: 10/11/12
  * Time: 3:08 AM
- * To change this template use File | Settings | File Templates.
  */
 public class GsonPersistenceProvider extends AbstractFilePersistenceProvider
 {

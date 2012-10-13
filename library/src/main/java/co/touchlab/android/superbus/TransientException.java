@@ -1,11 +1,16 @@
 package co.touchlab.android.superbus;
 
 /**
- * Created by IntelliJ IDEA.
+ * Thrown by commands, interpreted by the bus.  A TransientException means something temporary has
+ * happened, and you expect things to processing successfully later.  In general, this means there
+ * was an issue with the network.
+ *
+ * BE VERY CAREFUL!!!  If your code throws this in a situation that you can't actually resolve,
+ * your command will stay around forever, and latter commands will never be processed.
+ *
  * User: kgalligan
  * Date: 1/11/12
  * Time: 9:33 AM
- * To change this template use File | Settings | File Templates.
  */
 public class TransientException extends Exception
 {

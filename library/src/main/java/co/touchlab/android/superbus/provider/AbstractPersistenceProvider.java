@@ -14,11 +14,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Created with IntelliJ IDEA.
+ * Base class for implementing PersistenceProvider.  Unless you have something REALLY strange,
+ * you should always extend this for custom PersistenceProvider implementations.
+ *
  * User: kgalligan
  * Date: 9/4/12
  * Time: 1:34 AM
- * To change this template use File | Settings | File Templates.
  */
 public abstract class AbstractPersistenceProvider implements PersistenceProvider
 {

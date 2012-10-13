@@ -14,11 +14,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 
 /**
- * Created with IntelliJ IDEA.
+ * Store commands as raw json.  Gson is probably simpler, but this is available if needed.
+ *
  * User: kgalligan
  * Date: 10/11/12
  * Time: 3:38 AM
- * To change this template use File | Settings | File Templates.
  */
 public class JsonPersistenceProvider extends AbstractFilePersistenceProvider
 {
@@ -35,14 +35,14 @@ public class JsonPersistenceProvider extends AbstractFilePersistenceProvider
     @Override
     protected StoredCommand inflateCommand(File commandFile, String commandFileName, String className) throws StorageException
     {
-        JSONCommand jsonCommand;
+        JsonCommand jsonCommand;
         try
         {
             FileReader reader = new FileReader(commandFile);
             JSONObject json= (JSONObject) new JSONTokener(reader).nextValue();
             reader.close();
             Object o = Class.forName(className).newInstance();
-            jsonCommand = (JSONCommand) o;
+            jsonCommand = (JsonCommand) o;
             jsonCommand.inflate(json);
         }
         catch (Exception e)
@@ -59,7 +59,7 @@ public class JsonPersistenceProvider extends AbstractFilePersistenceProvider
         try
         {
             JSONObject json = new JSONObject();
-            ((JSONCommand)command).store(json);
+            ((JsonCommand)command).store(json);
             FileWriter output = new FileWriter(file);
             output.write(json.toString());
             output.close();

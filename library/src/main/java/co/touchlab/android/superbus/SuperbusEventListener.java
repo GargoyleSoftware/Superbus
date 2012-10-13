@@ -4,12 +4,13 @@ import android.content.Context;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
 
 /**
- * Callback for bus events.  Has poor dependency on provider package. Should shove around.
+ * Callback for bus events.
+ *
+ * Developer note: This has poor dependency on provider package. Should reorg that.
  *
  * User: kgalligan
  * Date: 10/8/12
  * Time: 10:36 PM
- * To change this template use File | Settings | File Templates.
  */
 public interface SuperbusEventListener
 {

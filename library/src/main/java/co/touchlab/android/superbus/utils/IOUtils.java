@@ -5,11 +5,9 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- * Created with IntelliJ IDEA.
  * User: kgalligan
  * Date: 10/11/12
  * Time: 3:11 AM
- * To change this template use File | Settings | File Templates.
  */
 public class IOUtils
 {
