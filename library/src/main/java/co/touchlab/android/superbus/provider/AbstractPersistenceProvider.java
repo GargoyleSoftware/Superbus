@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Base class for implementing PersistenceProvider.  Unless you have something REALLY strange,
@@ -38,6 +39,17 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
     @Override
     public final synchronized void put(final Context context, final Command c) throws StorageException
     {
+        runPut(context, c, true);
+    }
+
+    @Override
+    public void putNoRestart(Context context, Command c) throws StorageException
+    {
+        runPut(context, c, false);
+    }
+
+    private void runPut(final Context context, final Command c, final boolean busRestart)
+    {
         executorService.submit(new Runnable()
         {
             @Override
@@ -45,24 +57,33 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
             {
                 loadInitialCommands();
 
+                boolean duplicate = false;
+
                 for (Command command : commandQueue)
                 {
-                    if(command.same(c))
-                        return;
+                    if(c.same(command))
+                    {
+                        duplicate = true;
+                        break;
+                    }
                 }
 
-                try
+                if(!duplicate)
                 {
-                    persistCommand(context, c);
-                }
-                catch (StorageException e)
-                {
-                    throw new RuntimeException(e);
+                    try
+                    {
+                        persistCommand(context, c);
+                    }
+                    catch (StorageException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+
+                    commandQueue.add(c);
                 }
 
-                commandQueue.add(c);
-
-                SuperbusService.notifyStart(context);
+                if(busRestart)
+                    SuperbusService.notifyStart(context);
             }
         });
     }

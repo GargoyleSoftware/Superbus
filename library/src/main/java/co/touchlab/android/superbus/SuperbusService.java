@@ -4,12 +4,9 @@ import android.app.Application;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.log.BusLogImpl;
 import co.touchlab.android.superbus.provider.PersistedApplication;
@@ -56,12 +53,23 @@ public class SuperbusService extends Service
         return Service.START_STICKY;
     }
 
-    private void logCommand(Command command, String methodName)
+    private void logCommandDebug(Command command, String methodName)
     {
         try
         {
-            if(log.isLoggable(TAG, Log.DEBUG))
-                log.d(TAG, methodName + ": " + command.getAdded() + " : " + command.logSummary());
+            log.d(TAG, methodName + ": " + command.getAdded() + " : " + command.logSummary());
+        }
+        catch (Exception e)
+        {
+            //Just in case...
+        }
+    }
+
+    private void logCommandVerbose(Command command, String methodName)
+    {
+        try
+        {
+            log.v(TAG, methodName + ": " + command.getAdded() + " : " + command.logSummary());
         }
         catch (Exception e)
         {
@@ -153,7 +161,8 @@ public class SuperbusService extends Service
                         log.i(TAG, "No network connection. Put off updates.");
                         break;
                     }*/
-                    log.v(TAG, "CommandThread loop start " + System.currentTimeMillis());
+                    logCommandDebug(c, "[CommandThread]");
+                    log.d(TAG, "Command [" + c.getClass().getSimpleName() +"] started: " + System.currentTimeMillis());
 
                     long delaySleep = 0l;
 
@@ -179,7 +188,8 @@ public class SuperbusService extends Service
                             }
                             else
                             {
-                                provider.put(SuperbusService.this, c);
+                                log.i(TAG, "Reset command on TransientException: {" + c.logSummary() +"}");
+                                provider.putNoRestart(SuperbusService.this, c);
                                 c.onTransientError(SuperbusService.this, e);
                             }
 
@@ -215,7 +225,7 @@ public class SuperbusService extends Service
                         }
                     }
 
-                    log.v(TAG, "CommandThread loop end " + System.currentTimeMillis());
+                    log.d(TAG, "Command [" + c.getClass().getSimpleName() + "] ended: " + System.currentTimeMillis());
                 }
             }
             catch (Throwable e)
@@ -310,11 +320,11 @@ public class SuperbusService extends Service
 
     private void callCommand(final Command command) throws Exception
     {
-        logCommand(command, "callCommand");
+        logCommandVerbose(command, "callCommand-start");
 
         command.callCommand(this);
 
-        logCommand(command, "callComand (done)");
+        logCommandVerbose(command, "callComand-finish");
     }
 
     /**

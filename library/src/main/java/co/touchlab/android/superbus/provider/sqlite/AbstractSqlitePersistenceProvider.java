@@ -31,8 +31,8 @@ import java.util.List;
 public abstract class AbstractSqlitePersistenceProvider extends AbstractStoredPersistenceProvider
 {
     public static final String TABLE_NAME = "__SQL_PERS_PROV";
-    public static final String COLUMNS = "id INTEGER PRIMARY KEY AUTOINCREMENT, type VARCHAR, commandData VARCHAR, priority VARCHAR, lastUpdate INTEGER, added INTEGER, transientExceptionCount INTEGER";
-    public static final String[] COLUMN_LIST = {"id", "type", "commandData", "priority", "lastUpdate", "added", "transientExceptionCount"};
+    public static final String COLUMNS = "id INTEGER PRIMARY KEY AUTOINCREMENT, type VARCHAR, commandData VARCHAR";
+    public static final String[] COLUMN_LIST = {"id", "type", "commandData"};
 
     private SQLiteDatabaseFactory databaseFactory;
 
@@ -91,13 +91,9 @@ public abstract class AbstractSqlitePersistenceProvider extends AbstractStoredPe
 
                 values.put("type", command.getClass().getName());
                 values.put("commandData", commandData);
-                values.put("priority", command.getPriority());
-                values.put("lastUpdate", command.getLastUpdate());
-                values.put("added", command.getAdded());
-                values.put("transientExceptionCount", command.getTransientExceptionCount());
 
                 long newRowId = databaseFactory.getDatabase().insertOrThrow(
-                        TABLE_NAME, "commandData", values
+                        TABLE_NAME, "type", values
                 );
 
                 sqliteCommand.setId(newRowId);
@@ -136,17 +132,11 @@ public abstract class AbstractSqlitePersistenceProvider extends AbstractStoredPe
         {
             long id = c.getLong(1);
             String type = c.getString(2);
-            SqliteCommand storedCommand = (SqliteCommand) Class.forName(type).newInstance();
-
-            storedCommand.setId(id);
             String commandData = c.getString(3);
 
-            inflateCommand(storedCommand, commandData);
+            SqliteCommand storedCommand = inflateCommand(commandData, type);
 
-            storedCommand.setPriority(c.getInt(4));
-            storedCommand.setLastUpdate(c.getLong(5));
-            storedCommand.setAdded(c.getLong(6));
-            storedCommand.setTransientExceptionCount(c.getInt(7));
+            storedCommand.setId(id);
 
             return storedCommand;
         }
@@ -159,7 +149,7 @@ public abstract class AbstractSqlitePersistenceProvider extends AbstractStoredPe
         }
     }
 
-    protected abstract void inflateCommand(SqliteCommand command, String commandData) throws StorageException;
+    protected abstract SqliteCommand inflateCommand(String commandData, String className) throws StorageException;
 
     protected abstract String serializeCommand(SqliteCommand command)throws StorageException;
 

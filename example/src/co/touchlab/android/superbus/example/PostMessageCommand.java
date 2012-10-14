@@ -1,17 +1,15 @@
 package co.touchlab.android.superbus.example;
 
-import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
-import android.widget.Toast;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import co.touchlab.android.superbus.provider.file.StoredCommand;
-import com.turbomanage.httpclient.BasicHttpClient;
 import com.turbomanage.httpclient.HttpResponse;
 import com.turbomanage.httpclient.ParameterMap;
+
+import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -70,6 +68,19 @@ public class PostMessageCommand extends StoredCommand
 
         //Check if anything went south
         httpClient.checkAndThrowError();
+
+        String content = httpResponse.getBodyAsString();
+
+        try
+        {
+            DataHelper.saveDataFile(context, content);
+        }
+        catch (IOException e)
+        {
+            throw new PermanentException(e);
+        }
+
+        GetMessageCommand.sendUpdateBroadcast(context);
     }
 
     @Override

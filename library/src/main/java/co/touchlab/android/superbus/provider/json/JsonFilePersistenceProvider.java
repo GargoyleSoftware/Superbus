@@ -42,7 +42,7 @@ public class JsonFilePersistenceProvider extends AbstractFilePersistenceProvider
         {
             FileReader reader = new FileReader(commandFile);
             String jsonString = IOUtils.toString(reader);
-            return commandAdapter.inflateCommand(jsonString, className);
+            return (StoredCommand) commandAdapter.inflateCommand(jsonString, className);
         }
         catch (StorageException e)
         {

@@ -9,6 +9,8 @@ import co.touchlab.android.superbus.provider.file.StoredCommand;
 import com.turbomanage.httpclient.HttpResponse;
 import com.turbomanage.httpclient.ParameterMap;
 
+import java.io.IOException;
+
 /**
  * Created with IntelliJ IDEA.
  * User: touchlab
@@ -42,13 +44,28 @@ public class EditMessageCommand extends StoredCommand {
         BusHttpClient httpClient = new BusHttpClient("http://wejit.herokuapp.com");
 
         //I pass in the id but for some reason a new ExamplePost is created with an id of id+1, instead of editing orig
-        ParameterMap params = httpClient.newParams().add("message", message).add("id", id.toString());
+        ParameterMap params = httpClient.newParams()
+                .add("message", message)
+                .add("id", id.toString());
 
         httpClient.setConnectionTimeout(10000);
         HttpResponse httpResponse = httpClient.post("/device/editExamplePost", params);
 
         //Check if anything went south
         httpClient.checkAndThrowError();
+
+        String content = httpResponse.getBodyAsString();
+
+        try
+        {
+            DataHelper.saveDataFile(context, content);
+        }
+        catch (IOException e)
+        {
+            throw new PermanentException(e);
+        }
+
+        GetMessageCommand.sendUpdateBroadcast(context);
     }
 
     @Override

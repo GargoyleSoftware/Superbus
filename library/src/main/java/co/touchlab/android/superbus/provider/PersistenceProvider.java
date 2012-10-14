@@ -18,6 +18,8 @@ public interface PersistenceProvider
 {
     void put(Context context, Command c) throws StorageException;
 
+    void putNoRestart(Context context, Command c) throws StorageException;
+
     void persistCommand(Context context, Command c)throws StorageException;
 
     Command getAndRemoveCurrent() throws StorageException;

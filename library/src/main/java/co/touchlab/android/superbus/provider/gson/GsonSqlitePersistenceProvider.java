@@ -6,6 +6,7 @@ import co.touchlab.android.superbus.log.BusLogImpl;
 import co.touchlab.android.superbus.provider.sqlite.AbstractSqlitePersistenceProvider;
 import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
+import co.touchlab.android.superbus.utils.IOUtils;
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,14 +31,36 @@ public class GsonSqlitePersistenceProvider extends AbstractSqlitePersistenceProv
     }
 
     @Override
-    protected void inflateCommand(SqliteCommand command, String commandData) throws StorageException
+    protected SqliteCommand inflateCommand(String commandData, String className) throws StorageException
     {
-
+        try
+        {
+            return (SqliteCommand) commandAdapter.inflateCommand(commandData, className);
+        }
+        catch (StorageException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new StorageException(e);
+        }
     }
 
     @Override
     protected String serializeCommand(SqliteCommand command) throws StorageException
     {
-        return null;
+        try
+        {
+            return commandAdapter.storeCommand(command);
+        }
+        catch (StorageException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new StorageException(e);
+        }
     }
 }

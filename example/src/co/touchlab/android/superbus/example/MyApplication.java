@@ -1,6 +1,9 @@
 package co.touchlab.android.superbus.example;
 
 import android.app.Application;
+import android.os.Build;
+import android.os.StrictMode;
+import co.touchlab.android.superbus.CommandPurgePolicy;
 import co.touchlab.android.superbus.StorageException;
 import co.touchlab.android.superbus.SuperbusEventListener;
 import co.touchlab.android.superbus.log.BusLog;
@@ -8,7 +11,7 @@ import co.touchlab.android.superbus.log.BusLogImpl;
 import co.touchlab.android.superbus.network.ConnectionChangeBusEventListener;
 import co.touchlab.android.superbus.provider.PersistedApplication;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
-import co.touchlab.android.superbus.provider.gson.GsonPersistenceProvider;
+import co.touchlab.android.superbus.provider.gson.GsonFilePersistenceProvider;
 
 /**
  * User: William Sanville
@@ -19,20 +22,53 @@ import co.touchlab.android.superbus.provider.gson.GsonPersistenceProvider;
  */
 public class MyApplication extends Application implements PersistedApplication
 {
-
-    private GsonPersistenceProvider persistenceProvider;
+    public static final int ICS = 15;
+    private GsonFilePersistenceProvider persistenceProvider;
 
     @Override
     public void onCreate()
     {
         super.onCreate();
+
+        setupStrictMode();
+
         try
         {
-            persistenceProvider = new GsonPersistenceProvider(this);
+            persistenceProvider = new GsonFilePersistenceProvider(this);
         }
         catch (StorageException e)
         {
             throw new RuntimeException(e);
+        }
+
+        new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    persistenceProvider.put(MyApplication.this, new GetMessageCommand());
+                }
+                catch (StorageException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        }.start();
+    }
+
+    private void setupStrictMode()
+    {
+        if (Build.VERSION.SDK_INT >= ICS)
+        {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                    .detectDiskReads()
+                    .detectDiskWrites()
+                    .detectNetwork()
+                    .penaltyFlashScreen()
+                    .penaltyLog()
+                    .build());
         }
     }
 
@@ -52,5 +88,11 @@ public class MyApplication extends Application implements PersistedApplication
     public SuperbusEventListener getEventListener()
     {
         return new ConnectionChangeBusEventListener();
+    }
+
+    @Override
+    public CommandPurgePolicy getCommandPurgePolicy()
+    {
+        return null;
     }
 }

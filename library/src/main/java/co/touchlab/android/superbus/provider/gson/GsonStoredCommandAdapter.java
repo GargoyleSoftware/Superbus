@@ -1,5 +1,6 @@
 package co.touchlab.android.superbus.provider.gson;
 
+import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
 import co.touchlab.android.superbus.provider.file.StoredCommand;
 import co.touchlab.android.superbus.provider.stringbased.StoredCommandAdapter;
@@ -19,7 +20,7 @@ import java.io.FileWriter;
 public class GsonStoredCommandAdapter implements StoredCommandAdapter
 {
     @Override
-    public StoredCommand inflateCommand(String data, String className) throws StorageException
+    public Command inflateCommand(String data, String className) throws StorageException
     {
         try
         {
@@ -33,7 +34,7 @@ public class GsonStoredCommandAdapter implements StoredCommandAdapter
     }
 
     @Override
-    public String storeCommand(StoredCommand command) throws StorageException
+    public String storeCommand(Command command) throws StorageException
     {
         try
         {
