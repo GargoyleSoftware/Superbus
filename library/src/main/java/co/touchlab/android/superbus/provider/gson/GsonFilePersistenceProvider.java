@@ -1,4 +1,4 @@
-package co.touchlab.android.superbus.provider.json;
+package co.touchlab.android.superbus.provider.gson;
 
 import android.content.Context;
 import co.touchlab.android.superbus.StorageException;
@@ -7,44 +7,45 @@ import co.touchlab.android.superbus.log.BusLogImpl;
 import co.touchlab.android.superbus.provider.file.AbstractFilePersistenceProvider;
 import co.touchlab.android.superbus.provider.file.StoredCommand;
 import co.touchlab.android.superbus.utils.IOUtils;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 
 /**
- * Store commands as raw json.  Gson is probably simpler, but this is available if needed.
+ * Command data stored as json, storing and inflating handled by http://code.google.com/p/google-gson/
+ *
+ * Be careful about the data you put in here.  ANYTHING in the class will be saved.  If a value should
+ * not be saved, make sure to mark it 'transient'.
+ *
+ * BTW, if you're just getting started and don't know what to use, this is highly recommended.
  *
  * User: kgalligan
  * Date: 10/11/12
- * Time: 3:38 AM
+ * Time: 3:08 AM
  */
-public class JsonPersistenceProvider extends AbstractFilePersistenceProvider
+public class GsonFilePersistenceProvider extends AbstractFilePersistenceProvider
 {
+    private GsonStoredCommandAdapter commandAdapter;
 
-    private JsonStoredCommandAdapter commandAdapter;
-
-    public JsonPersistenceProvider(Context context) throws StorageException
+    public GsonFilePersistenceProvider(Context c) throws StorageException
     {
-        this(context, new BusLogImpl());
+        this(c, new BusLogImpl());
     }
 
-    public JsonPersistenceProvider(Context c, BusLog log) throws StorageException
+    public GsonFilePersistenceProvider(Context c, BusLog log) throws StorageException
     {
         super(c, log);
-        commandAdapter = new JsonStoredCommandAdapter();
+        commandAdapter = new GsonStoredCommandAdapter();
     }
 
     @Override
-    protected StoredCommand inflateCommand(File commandFile, String commandFileName, String className) throws StorageException
+    protected StoredCommand inflateCommand(File file, String fileName, String className) throws StorageException
     {
         try
         {
-            FileReader reader = new FileReader(commandFile);
-            String jsonString = IOUtils.toString(reader);
-            return commandAdapter.inflateCommand(jsonString, className);
+            FileReader input = new FileReader(file);
+            return commandAdapter.inflateCommand(IOUtils.toString(input), className);
         }
         catch (StorageException e)
         {
@@ -61,8 +62,9 @@ public class JsonPersistenceProvider extends AbstractFilePersistenceProvider
     {
         try
         {
+            String jsonData = commandAdapter.storeCommand(command);
             FileWriter output = new FileWriter(file);
-            output.write(commandAdapter.storeCommand(command));
+            output.write(jsonData);
             output.close();
         }
         catch (StorageException e)

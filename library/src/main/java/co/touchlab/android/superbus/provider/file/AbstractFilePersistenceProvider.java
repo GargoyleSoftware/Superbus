@@ -6,6 +6,7 @@ import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
 import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.provider.AbstractPersistenceProvider;
+import co.touchlab.android.superbus.provider.AbstractStoredPersistenceProvider;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -20,10 +21,9 @@ import java.util.*;
  * Date: 9/4/12
  * Time: 2:32 PM
  */
-public abstract class AbstractFilePersistenceProvider extends AbstractPersistenceProvider
+public abstract class AbstractFilePersistenceProvider extends AbstractStoredPersistenceProvider
 {
     private File filesDir;
-    private Set<Class> checkedCommandClasses = new HashSet<Class>();
 
     protected AbstractFilePersistenceProvider(Context context, BusLog log) throws StorageException
     {
@@ -63,15 +63,6 @@ public abstract class AbstractFilePersistenceProvider extends AbstractPersistenc
         }
 
         return commands;
-    }
-
-    //TODO: when exception triggered, in-memory list needs a refresh (or a full exception thrown).
-    @Override
-    public synchronized Command getAndRemoveCurrent() throws StorageException
-    {
-        Command command = super.getAndRemoveCurrent();
-        removeCommand(command);
-        return command;
     }
 
     /**
@@ -118,28 +109,29 @@ public abstract class AbstractFilePersistenceProvider extends AbstractPersistenc
         }
     }
 
-    private void checkNoArg(Command command) throws StorageException
+    @Override
+    protected void removeCommand(Command command) throws StorageException
     {
-        if(checkedCommandClasses.contains(command))
-            return;
-
-        boolean isNoArg = false;
-        Class<? extends Command> commandClass = command.getClass();
-        Constructor<?>[] constructors = commandClass.getConstructors();
-
-        for (Constructor<?> constructor : constructors)
+        if (command instanceof StoredCommand)
         {
-            if(constructor.getParameterTypes().length == 0)
+            boolean success;
+
+            try
             {
-                isNoArg = true;
-                break;
+                StoredCommand fileCommand = (StoredCommand) command;
+                File storedCommand = new File(commandsDirectory(), fileCommand.getCommandFileName());
+                success = storedCommand.delete();
+            }
+            catch (Exception e)
+            {
+                throw new StorageException("Couldn't remove command file", e);
+            }
+
+            if (!success)
+            {
+                throw new StorageException("Couldn't remove command file");
             }
         }
-
-        if(!isNoArg)
-            throw new StorageException("All StoredCommand classes must have a no-arg constructor");
-
-        checkedCommandClasses.add(commandClass);
     }
 
     private StoredCommand createCommand(File commandFile)
@@ -197,27 +189,5 @@ public abstract class AbstractFilePersistenceProvider extends AbstractPersistenc
         return commands;
     }
 
-    private void removeCommand(Command command) throws StorageException
-    {
-        if (command instanceof StoredCommand)
-        {
-            boolean success;
 
-            try
-            {
-                StoredCommand fileCommand = (StoredCommand) command;
-                File storedCommand = new File(commandsDirectory(), fileCommand.getCommandFileName());
-                success = storedCommand.delete();
-            }
-            catch (Exception e)
-            {
-                throw new StorageException("Couldn't remove command file", e);
-            }
-
-            if (!success)
-            {
-                throw new StorageException("Couldn't remove command file");
-            }
-        }
-    }
 }

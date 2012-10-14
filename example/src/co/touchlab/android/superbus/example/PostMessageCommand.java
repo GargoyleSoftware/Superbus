@@ -18,7 +18,6 @@ import com.turbomanage.httpclient.ParameterMap;
  * User: kgalligan
  * Date: 10/11/12
  * Time: 5:26 AM
- * To change this template use File | Settings | File Templates.
  */
 public class PostMessageCommand extends StoredCommand
 {

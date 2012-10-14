@@ -10,7 +10,6 @@ import android.widget.Toast;
  * User: kgalligan
  * Date: 10/11/12
  * Time: 7:42 AM
- * To change this template use File | Settings | File Templates.
  */
 public class CommandErrorReceiver extends BroadcastReceiver
 {
