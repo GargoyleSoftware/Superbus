@@ -149,8 +149,14 @@ public class ExampleActivity extends Activity
                                     try
                                     {
                                         String messString = text.getText().toString();
-                                        messageEntry.setMessage(messString);
-                                        callUpdate(messageEntry);
+
+                                        MessageEntry localEntry = messageEntry;
+                                        if (localEntry == null)
+                                        {
+                                            localEntry = new MessageEntry(null, null, System.currentTimeMillis(), messString);
+                                        }
+                                        localEntry.setMessage(messString);
+                                        callUpdate(localEntry);
                                     }
                                     catch (StorageException e)
                                     {

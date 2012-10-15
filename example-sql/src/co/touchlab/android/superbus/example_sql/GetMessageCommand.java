@@ -8,6 +8,7 @@ import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import co.touchlab.android.superbus.provider.file.StoredCommand;
+import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 
@@ -21,7 +22,7 @@ import java.util.List;
  * Time: 2:48 AM
  * To change this template use File | Settings | File Templates.
  */
-public class GetMessageCommand extends StoredCommand
+public class GetMessageCommand extends SqliteCommand
 {
 
     public static final String GET_MESSAGE_COMMAND_COMPLETE = "GetMessageCommand-complete";
@@ -49,7 +50,7 @@ public class GetMessageCommand extends StoredCommand
     @Override
     public boolean same(Command command)
     {
-        return true;
+        return command instanceof GetMessageCommand;
     }
 
     @Override

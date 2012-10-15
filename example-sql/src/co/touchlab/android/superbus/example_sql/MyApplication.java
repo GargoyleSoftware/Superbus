@@ -32,6 +32,8 @@ public class MyApplication extends Application implements PersistedApplication
     {
         super.onCreate();
 
+        DatabaseHelper.writeDbToSdCard(this);
+
         setupStrictMode();
 
         try

@@ -205,9 +205,11 @@ public abstract class Command implements Comparable<Command>, Serializable
 
     public int compareTo(Command command)
     {
-        int priorityCompare = priority - command.getPriority();
+        int priorityCompare = command.getPriority() - priority;
         if (priorityCompare != 0)
+        {
             return priorityCompare;
+        }
         return (int)(added - command.getAdded());
     }
 }

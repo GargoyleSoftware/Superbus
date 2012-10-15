@@ -25,7 +25,7 @@ public class GsonStoredCommandAdapter implements StoredCommandAdapter
         try
         {
             Object returnedCommand = new Gson().fromJson(data, Class.forName(className));
-            return (StoredCommand) returnedCommand;
+            return (Command) returnedCommand;
         }
         catch (Exception e)
         {

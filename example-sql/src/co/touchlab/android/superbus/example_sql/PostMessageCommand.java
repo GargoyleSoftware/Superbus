@@ -6,6 +6,7 @@ import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import co.touchlab.android.superbus.provider.file.StoredCommand;
+import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
 import com.turbomanage.httpclient.HttpResponse;
 import com.turbomanage.httpclient.ParameterMap;
 import org.json.JSONException;
@@ -18,7 +19,7 @@ import java.io.IOException;
  * Date: 10/11/12
  * Time: 5:26 AM
  */
-public class PostMessageCommand extends StoredCommand
+public class PostMessageCommand extends SqliteCommand
 {
     String message;
 

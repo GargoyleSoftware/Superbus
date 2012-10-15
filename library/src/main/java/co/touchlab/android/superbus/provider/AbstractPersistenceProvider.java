@@ -6,13 +6,11 @@ import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
 import co.touchlab.android.superbus.SuperbusService;
 import co.touchlab.android.superbus.log.BusLog;
+import co.touchlab.android.superbus.utils.UiThreadContext;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Base class for implementing PersistenceProvider.  Unless you have something REALLY strange,
@@ -28,9 +26,6 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
     private boolean initCalled = false;
     private BusLog log;
 
-    //DO NOT MAKE THIS MULTIPLE
-    ExecutorService executorService = Executors.newSingleThreadExecutor();
-
     protected AbstractPersistenceProvider(BusLog log)
     {
         this.log = log;
@@ -43,49 +38,45 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
     }
 
     @Override
-    public void putNoRestart(Context context, Command c) throws StorageException
+    public final synchronized void putNoRestart(Context context, Command c) throws StorageException
     {
         runPut(context, c, false);
     }
 
     private void runPut(final Context context, final Command c, final boolean busRestart)
     {
-        executorService.submit(new Runnable()
+        //There may be serious I/O going on here.  Assert we're OK for that.
+        UiThreadContext.assertBackgroundThread();
+
+        loadInitialCommands();
+
+        boolean duplicate = false;
+
+        for (Command command : commandQueue)
         {
-            @Override
-            public void run()
+            if(c.same(command))
             {
-                loadInitialCommands();
-
-                boolean duplicate = false;
-
-                for (Command command : commandQueue)
-                {
-                    if(c.same(command))
-                    {
-                        duplicate = true;
-                        break;
-                    }
-                }
-
-                if(!duplicate)
-                {
-                    try
-                    {
-                        persistCommand(context, c);
-                    }
-                    catch (StorageException e)
-                    {
-                        throw new RuntimeException(e);
-                    }
-
-                    commandQueue.add(c);
-                }
-
-                if(busRestart)
-                    SuperbusService.notifyStart(context);
+                duplicate = true;
+                break;
             }
-        });
+        }
+
+        if(!duplicate)
+        {
+            try
+            {
+                persistCommand(context, c);
+            }
+            catch (StorageException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+            commandQueue.add(c);
+        }
+
+        if(busRestart)
+            SuperbusService.notifyStart(context);
     }
 
     public final synchronized void sendMessage(String message)

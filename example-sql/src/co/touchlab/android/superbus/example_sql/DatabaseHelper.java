@@ -5,11 +5,15 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
+import android.util.Log;
 import co.touchlab.android.superbus.provider.sqlite.AbstractSqlitePersistenceProvider;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +45,26 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
 
         return helper;
+    }
+
+    public static void writeDbToSdCard(Context context)
+    {
+        File dbFile = context.getDatabasePath(DATABASE_NAME);
+        File outFile = new File(Environment.getExternalStorageDirectory(), dbFile.getName());
+
+        try
+        {
+            FileInputStream reader = new FileInputStream(dbFile);
+            FileOutputStream writer = new FileOutputStream(outFile);
+            IOUtils.copy(reader, writer);
+
+            reader.close();
+            writer.close();
+        }
+        catch (IOException e)
+        {
+            Log.e(DatabaseHelper.class.getSimpleName(), null, e);
+        }
     }
     
     private DatabaseHelper(Context context)
@@ -97,14 +121,15 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public void insertOrUpdateMessage(SQLiteDatabase db, MessageEntry message)
     {
         ContentValues vals = new ContentValues();
-        vals.put(COLUMN_LIST[1], message.getServerId());
+        Long serverId = message.getServerId();
+        vals.put(COLUMN_LIST[1], serverId);
         vals.put(COLUMN_LIST[2], message.getPosted());
         vals.put(COLUMN_LIST[3], message.getMessage());
 
-        Cursor cursor = db.query(TABLE_NAME, COLUMN_LIST, "serverId = ?", new String[]{message.getServerId().toString()}, null, null, null);
-        if(cursor.moveToNext())
+        Cursor cursor = serverId == null ? null : db.query(TABLE_NAME, COLUMN_LIST, "serverId = ?", new String[]{serverId.toString()}, null, null, null);
+        if(cursor != null && cursor.moveToNext())
         {
-            db.update(TABLE_NAME, vals, "serverId = ?", new String[]{message.getServerId().toString()});
+            db.update(TABLE_NAME, vals, "serverId = ?", new String[]{serverId.toString()});
             message.setLocalId(cursor.getLong(0));
         }
         else

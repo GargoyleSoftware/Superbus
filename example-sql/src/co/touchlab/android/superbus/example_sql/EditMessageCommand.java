@@ -5,12 +5,10 @@ import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
-import co.touchlab.android.superbus.provider.file.StoredCommand;
+import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
 import com.turbomanage.httpclient.HttpResponse;
 import com.turbomanage.httpclient.ParameterMap;
 import org.json.JSONException;
-
-import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,21 +16,22 @@ import java.io.IOException;
  * Date: 10/12/12
  * Time: 5:05 PM
  */
-public class EditMessageCommand extends StoredCommand {
+public class EditMessageCommand extends SqliteCommand
+{
 
     String message;
-    Long id;
+    Long serverId;
 
     public  EditMessageCommand(){}
 
-    public EditMessageCommand(String message, long id) {
+    public EditMessageCommand(String message, long serverId) {
         this.message = message;
-        this.id = id;
+        this.serverId = serverId;
     }
 
     @Override
     public String logSummary() {
-        return "EditMessageCommand[ message: "+ message +" id: " + id + "]";
+        return "EditMessageCommand[ message: "+ message +" serverId: " + serverId + "]";
     }
 
     @Override
@@ -47,7 +46,7 @@ public class EditMessageCommand extends StoredCommand {
         //I pass in the id but for some reason a new ExamplePost is created with an id of id+1, instead of editing orig
         ParameterMap params = httpClient.newParams()
                 .add("message", message)
-                .add("id", id.toString());
+                .add("id", serverId.toString());
 
         httpClient.setConnectionTimeout(10000);
         HttpResponse httpResponse = httpClient.post("/device/editExamplePost", params);
