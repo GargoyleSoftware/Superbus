@@ -3,6 +3,7 @@ package co.touchlab.android.superbus.example;
 import android.content.Context;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
+import co.touchlab.android.superbus.StorageException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import co.touchlab.android.superbus.provider.file.StoredCommand;
@@ -54,18 +55,14 @@ public class EditMessageCommand extends StoredCommand {
         //Check if anything went south
         httpClient.checkAndThrowError();
 
-        String content = httpResponse.getBodyAsString();
-
         try
         {
-            DataHelper.saveDataFile(context, content);
+            ((MyApplication)context.getApplicationContext()).getProvider().put(context, new GetMessageCommand());
         }
-        catch (IOException e)
+        catch (StorageException e)
         {
-            throw new PermanentException(e);
+            //Optional
         }
-
-        GetMessageCommand.sendUpdateBroadcast(context);
     }
 
     @Override

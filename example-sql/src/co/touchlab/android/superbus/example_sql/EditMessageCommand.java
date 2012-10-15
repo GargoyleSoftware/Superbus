@@ -3,6 +3,7 @@ package co.touchlab.android.superbus.example_sql;
 import android.content.Context;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
+import co.touchlab.android.superbus.StorageException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
@@ -54,18 +55,14 @@ public class EditMessageCommand extends SqliteCommand
         //Check if anything went south
         httpClient.checkAndThrowError();
 
-        String content = httpResponse.getBodyAsString();
-
         try
         {
-            DatabaseHelper.getInstance(context).saveToDb(context, content);
+            ((MyApplication)context.getApplicationContext()).getProvider().put(context, new GetMessageCommand());
         }
-        catch (JSONException e)
+        catch (StorageException e)
         {
-            throw new PermanentException(e);
+            //Optional
         }
-
-        GetMessageCommand.sendUpdateBroadcast(context);
     }
 
     @Override
