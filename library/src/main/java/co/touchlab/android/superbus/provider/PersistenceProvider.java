@@ -4,6 +4,8 @@ import android.content.Context;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
 
+import java.util.Map;
+
 /**
  * Provides persistence for commands, and the interface that the bus works with to get
  * commands.  In almost all cases, you should not implement this yourself.  Complex dynamics.
@@ -27,4 +29,8 @@ public interface PersistenceProvider
     int getSize() throws StorageException;
 
     void logPersistenceState();
+
+    void sendMessage(String message);
+
+    void sendMessage(String message, Map args);
 }

@@ -28,7 +28,12 @@ import java.util.Map;
  */
 public abstract class Command implements Comparable<Command>, Serializable
 {
+    public static final int MUCH_LOWER_PRIORITY = 1;
+    public static final int LOWER_PRIORITY = 5;
     public static final int DEFAULT_PRIORITY = 10;
+    public static final int HIGHER_PRIORITY = 15;
+    public static final int MUCH_HIGHER_PRIORITY = 20;
+
     //Init with current time. Allow override by accessors
     private long lastUpdate = System.currentTimeMillis();
 

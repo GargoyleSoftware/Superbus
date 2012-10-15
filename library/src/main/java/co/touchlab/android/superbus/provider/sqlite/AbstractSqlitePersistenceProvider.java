@@ -130,9 +130,9 @@ public abstract class AbstractSqlitePersistenceProvider extends AbstractStoredPe
     {
         try
         {
-            long id = c.getLong(1);
-            String type = c.getString(2);
-            String commandData = c.getString(3);
+            long id = c.getLong(0);
+            String type = c.getString(1);
+            String commandData = c.getString(2);
 
             SqliteCommand storedCommand = inflateCommand(commandData, type);
 
@@ -161,5 +161,6 @@ public abstract class AbstractSqlitePersistenceProvider extends AbstractStoredPe
     public void dropTables(SQLiteDatabase database)
     {
         database.execSQL("drop table "+ TABLE_NAME);
+        createTables(database);
     }
 }
