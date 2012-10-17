@@ -22,8 +22,18 @@ public class UiThreadContext
 
     public static void assertBackgroundThread()
     {
-        Thread uiThread = Looper.getMainLooper().getThread();
-        Thread currentThread = Thread.currentThread();
+        Thread uiThread = null;
+        Thread currentThread = null;
+        try
+        {
+            uiThread = Looper.getMainLooper().getThread();
+            currentThread = Thread.currentThread();
+        }
+        catch (Exception e)
+        {
+            //Probably in unit tests
+            return;
+        }
 
         if(uiThread == currentThread)
             throw new RuntimeException("Not in ui thread");
