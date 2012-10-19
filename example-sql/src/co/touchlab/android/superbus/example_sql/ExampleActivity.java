@@ -6,14 +6,12 @@ import android.content.*;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.*;
 import co.touchlab.android.superbus.StorageException;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -125,53 +123,66 @@ public class ExampleActivity extends Activity
                 .setTitle(promptText + " a message")
                 .setMessage(promptText + " text:")
                 .setView(text)
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener()
-                {
+                .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i)
-                    {
+                    public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
                     }
                 })
-                .setPositiveButton("OK", new DialogInterface.OnClickListener()
-                {
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(final DialogInterface dialogInterface, int i)
-                    {
+                    public void onClick(final DialogInterface dialogInterface, int i) {
                         String value = text.getText().toString().trim();
-                        if (StringUtils.isNotEmpty(value))
-                        {
-                            new AsyncTask()
-                            {
+                        if (StringUtils.isNotEmpty(value)) {
+                            new AsyncTask() {
                                 @Override
-                                protected Object doInBackground(Object... objects)
-                                {
-                                    try
-                                    {
+                                protected Object doInBackground(Object... objects) {
+                                    try {
                                         String messString = text.getText().toString();
 
                                         MessageEntry localEntry = messageEntry;
-                                        if (localEntry == null)
-                                        {
+                                        if (localEntry == null) {
                                             localEntry = new MessageEntry(null, null, System.currentTimeMillis(), messString);
                                         }
                                         localEntry.setMessage(messString);
                                         callUpdate(localEntry);
-                                    }
-                                    catch (StorageException e)
-                                    {
+                                    } catch (StorageException e) {
                                         throw new RuntimeException(e);
                                     }
                                     return null;
                                 }
 
                                 @Override
-                                protected void onPostExecute(Object o)
-                                {
+                                protected void onPostExecute(Object o) {
                                     dialogInterface.dismiss();
                                 }
                             }.execute();
                         }
+                    }
+                })
+                .setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        new AsyncTask() {
+                            @Override
+                            protected Object doInBackground(Object... objects) {
+
+                                try {
+
+                                    MessageEntry localEntry = messageEntry;
+
+                                    localEntry.setPosted(-1l);
+
+                                    callUpdate(localEntry);
+
+                                } catch (StorageException e) {
+                                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                }
+                                return null;
+                            }
+                        }.execute();
+
+
                     }
                 })
                 .show();
@@ -191,10 +202,13 @@ public class ExampleActivity extends Activity
             instance.insertOrUpdateMessage(db, messageEntry);
 
             Long serverId = messageEntry.getServerId();
+            Long posted = messageEntry.getPosted();
             String messString = messageEntry.getMessage();
 
-            if (serverId != null)
+            if (serverId != null && posted != -1l)
                 persistenceProvider.put(this, new EditMessageCommand(messString, serverId));
+            else if (posted == -1l)
+                persistenceProvider.put(this, new DeleteMessageCommand(serverId));
             else
                 persistenceProvider.put(this, new PostMessageCommand(messString));
 

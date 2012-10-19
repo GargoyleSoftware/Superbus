@@ -126,11 +126,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
         vals.put(COLUMN_LIST[2], message.getPosted());
         vals.put(COLUMN_LIST[3], message.getMessage());
 
+        boolean delete = (message.getPosted() == -1l);
+
         Cursor cursor = serverId == null ? null : db.query(TABLE_NAME, COLUMN_LIST, "serverId = ?", new String[]{serverId.toString()}, null, null, null);
-        if(cursor != null && cursor.moveToNext())
+        if(cursor != null && cursor.moveToNext() && delete ==false)
         {
             db.update(TABLE_NAME, vals, "serverId = ?", new String[]{serverId.toString()});
             message.setLocalId(cursor.getLong(0));
+        }
+        else if (delete) {
+            db.delete(TABLE_NAME, "serverId = ?", new String[]{serverId.toString()});
         }
         else
         {
