@@ -66,14 +66,6 @@ public abstract class AbstractSqlitePersistenceProvider extends AbstractStoredPe
     }
 
     @Override
-    public Command getAndRemoveCurrent() throws StorageException
-    {
-        Command command = super.getAndRemoveCurrent();
-        removeCommand(command);
-        return command;
-    }
-
-    @Override
     public void persistCommand(Context context, Command command) throws StorageException
     {
         if(command instanceof SqliteCommand)
