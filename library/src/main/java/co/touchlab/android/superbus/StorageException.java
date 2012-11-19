@@ -12,7 +12,7 @@ package co.touchlab.android.superbus;
  * Date: 1/29/12
  * Time: 5:50 PM
  */
-public class StorageException extends Exception
+public class StorageException extends PermanentException
 {
     public StorageException()
     {

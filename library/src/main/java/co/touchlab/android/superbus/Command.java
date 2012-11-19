@@ -1,6 +1,7 @@
 package co.touchlab.android.superbus;
 
 import android.content.Context;
+import co.touchlab.android.superbus.provider.PersistedApplication;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -211,5 +212,18 @@ public abstract class Command implements Comparable<Command>, Serializable
             return priorityCompare;
         }
         return (int)(added - command.getAdded());
+    }
+
+    /**
+     * If your command was cancelled mid-stream, easy way to repost to the queue.  Be careful with
+     * this, as it will do a simple repost.
+     *
+     * @param context
+     * @throws StorageException
+     */
+    public void repostSelf(Context context) throws StorageException
+    {
+        PersistedApplication persistedApplication = (PersistedApplication) context.getApplicationContext();
+        persistedApplication.getProvider().put(context, this);
     }
 }

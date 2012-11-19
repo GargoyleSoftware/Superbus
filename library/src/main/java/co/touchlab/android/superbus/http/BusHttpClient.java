@@ -55,10 +55,7 @@ public class BusHttpClient extends AbstractHttpClient
                 throw new PermanentException(cause);
 
             HttpResponse res = requestException.getHttpResponse();
-            /*if (logger.isLoggingEnabled()) {
-                logger.log("BasicRequestHandler.onError got");
-                e.printStackTrace();
-            }*/
+
             if (res != null)
             {
                 int status = res.getStatus();
@@ -69,6 +66,7 @@ public class BusHttpClient extends AbstractHttpClient
                 }
                 else
                 {
+                    //Not sure where this would happen...
                     throw new TransientException(cause);
                 }
             }

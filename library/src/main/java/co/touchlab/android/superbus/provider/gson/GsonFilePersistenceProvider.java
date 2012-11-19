@@ -45,7 +45,9 @@ public class GsonFilePersistenceProvider extends AbstractFilePersistenceProvider
         try
         {
             FileReader input = new FileReader(file);
-            return (StoredCommand) commandAdapter.inflateCommand(IOUtils.toString(input), className);
+            String jsonData = IOUtils.toString(input);
+            input.close();
+            return (StoredCommand) commandAdapter.inflateCommand(jsonData, className);
         }
         catch (StorageException e)
         {

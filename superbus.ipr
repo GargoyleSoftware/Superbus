@@ -37,7 +37,11 @@
       <entry name="?*.tld" />
       <entry name="?*.ftl" />
     </wildcardResourcePatterns>
-    <annotationProcessing enabled="false" useClasspath="true" />
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
+      </profile>
+    </annotationProcessing>
   </component>
   <component name="CopyrightManager" default="">
     <module2copyright />
@@ -242,6 +246,13 @@
       <JAVADOC />
       <SOURCES>
         <root url="jar://$PROJECT_DIR$/example-sql/libs/superbus-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="sass-stdlib">
+      <CLASSES />
+      <JAVADOC />
+      <SOURCES>
+        <root url="file://$APPLICATION_HOME_DIR$/plugins/sass/lib/stubs/sass_functions.scss" />
       </SOURCES>
     </library>
   </component>
