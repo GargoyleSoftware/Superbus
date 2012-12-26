@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>co.touchlab</groupId>
     <artifactId>superbus</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.70</version>
     <packaging>jar</packaging>
     <name>Superbus Service</name>
     <url>http://touchlab.co/</url>
@@ -214,11 +214,20 @@
         </dependency>
 
         <dependency>
-            <groupId>basic-http-client</groupId>
-            <artifactId>android</artifactId>
-            <version>0.86</version>
+            <groupId>code.google.com</groupId>
+            <artifactId>basic-http-client</artifactId>
+            <version>0.87.1</version>
             <scope>compile</scope>
         </dependency>
+
+        <!--<dependency>
+            <groupId>sqlcipher</groupId>
+            <artifactId>sqlcipher</artifactId>
+            <version>2.0.8</version>
+            <scope>compile</scope>
+        </dependency>-->
+
+
 
         <dependency>
             <groupId>com.google.code.gson</groupId>

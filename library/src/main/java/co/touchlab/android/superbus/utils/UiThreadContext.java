@@ -17,7 +17,7 @@ public class UiThreadContext
         Thread currentThread = Thread.currentThread();
 
         if(uiThread != currentThread)
-            throw new RuntimeException("Not in ui thread");
+            throw new RuntimeException("This call must be in UI thread");
     }
 
     public static void assertBackgroundThread()
@@ -36,6 +36,6 @@ public class UiThreadContext
         }
 
         if(uiThread == currentThread)
-            throw new RuntimeException("Not in ui thread");
+            throw new RuntimeException("This call must be in background thread");
     }
 }

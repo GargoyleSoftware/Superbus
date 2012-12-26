@@ -5,13 +5,13 @@ import android.util.Log;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
 import co.touchlab.android.superbus.log.BusLog;
-import co.touchlab.android.superbus.provider.AbstractPersistenceProvider;
 import co.touchlab.android.superbus.provider.AbstractStoredPersistenceProvider;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * PersistenceProvider to be used when commands should be stored as files.  There are a few implementations

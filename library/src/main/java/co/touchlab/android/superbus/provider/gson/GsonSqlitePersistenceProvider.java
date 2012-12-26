@@ -6,7 +6,6 @@ import co.touchlab.android.superbus.log.BusLogImpl;
 import co.touchlab.android.superbus.provider.sqlite.AbstractSqlitePersistenceProvider;
 import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
-import co.touchlab.android.superbus.utils.IOUtils;
 
 /**
  * Created with IntelliJ IDEA.

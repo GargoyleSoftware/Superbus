@@ -3,16 +3,12 @@ package co.touchlab.android.superbus.provider.sqlite;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
 import co.touchlab.android.superbus.log.BusLog;
-import co.touchlab.android.superbus.provider.AbstractPersistenceProvider;
 import co.touchlab.android.superbus.provider.AbstractStoredPersistenceProvider;
-import co.touchlab.android.superbus.provider.file.StoredCommand;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,14 +43,26 @@ public abstract class AbstractSqlitePersistenceProvider extends AbstractStoredPe
     {
         try
         {
+//            TODO: Replace for sqlcipher
+//            SQLiteDatabaseIntf db = databaseFactory.getDatabase();
+//            Cursor cursor = db.query(TABLE_NAME, COLUMN_LIST);
+
             SQLiteDatabase db = databaseFactory.getDatabase();
             Cursor cursor = db.query(TABLE_NAME, COLUMN_LIST, null, null, null, null, null, null);
 
-            List<Command> commands = new ArrayList<Command>();
-
-            while (cursor.moveToNext())
+            List<Command> commands = null;
+            try
             {
-                commands.add(loadFromCursor(cursor));
+                commands = new ArrayList<Command>();
+
+                while (cursor.moveToNext())
+                {
+                    commands.add(loadFromCursor(cursor));
+                }
+            }
+            finally
+            {
+                cursor.close();
             }
 
             return commands;

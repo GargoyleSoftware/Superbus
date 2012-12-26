@@ -2,13 +2,8 @@ package co.touchlab.android.superbus.provider.gson;
 
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
-import co.touchlab.android.superbus.provider.file.StoredCommand;
 import co.touchlab.android.superbus.provider.stringbased.StoredCommandAdapter;
-import co.touchlab.android.superbus.utils.IOUtils;
 import com.google.gson.Gson;
-
-import java.io.FileReader;
-import java.io.FileWriter;
 
 /**
  * Created with IntelliJ IDEA.

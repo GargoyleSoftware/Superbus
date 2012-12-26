@@ -2,9 +2,6 @@ package co.touchlab.android.superbus.provider.stringbased;
 
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.StorageException;
-import co.touchlab.android.superbus.provider.file.StoredCommand;
-
-import java.io.File;
 
 /**
  * Created with IntelliJ IDEA.
