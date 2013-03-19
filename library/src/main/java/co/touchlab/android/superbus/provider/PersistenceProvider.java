@@ -20,9 +20,18 @@ public interface PersistenceProvider
 {
     void put(Context context, Command c) throws StorageException;
 
-    void putNoRestart(Context context, Command c) throws StorageException;
+    void putMemOnly(Context context, Command c) throws StorageException;
 
     void persistCommand(Context context, Command c)throws StorageException;
+
+    /**
+     * Only remove from the actual persisted store if the command has completed, but it should be removed from the memory list
+     * when in process to prevent "same" calculations and messages.
+     *
+     * @param c
+     * @throws StorageException
+     */
+    void removePersistedCommand(Command c)throws StorageException;
 
     Command getAndRemoveCurrent() throws StorageException;
 

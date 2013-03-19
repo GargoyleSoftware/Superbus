@@ -34,16 +34,16 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
     @Override
     public final synchronized void put(final Context context, final Command c) throws StorageException
     {
-        runPut(context, c, true);
+        runPut(context, c, true, true);
     }
 
     @Override
-    public final synchronized void putNoRestart(Context context, Command c) throws StorageException
+    public final synchronized void putMemOnly(Context context, Command c) throws StorageException
     {
-        runPut(context, c, false);
+        runPut(context, c, false, false);
     }
 
-    private void runPut(final Context context, final Command c, final boolean busRestart)
+    private void runPut(final Context context, final Command c, final boolean busRestart, final boolean persist)
     {
         //There may be serious I/O going on here.  Assert we're OK for that.
         UiThreadContext.assertBackgroundThread();
@@ -61,7 +61,7 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
             }
         }
 
-        if(!duplicate)
+        if(!duplicate && persist)
         {
             try
             {
@@ -79,19 +79,19 @@ public abstract class AbstractPersistenceProvider implements PersistenceProvider
             SuperbusService.notifyStart(context);
     }
 
-    public final synchronized void sendMessage(String message)
+    public final synchronized void sendMessage(Context context, String message)
     {
         for (Command command : commandQueue)
         {
-            command.onRuntimeMessage(message);
+            command.onRuntimeMessage(context, message);
         }
     }
 
-    public final synchronized void sendMessage(String message, Map args)
+    public final synchronized void sendMessage(Context context, String message, Map args)
     {
         for (Command command : commandQueue)
         {
-            command.onRuntimeMessage(message, args);
+            command.onRuntimeMessage(context, message, args);
         }
     }
 

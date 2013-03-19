@@ -170,6 +170,7 @@ public class SuperbusService extends Service
                     {
                         callCommand(c);
                         c.onSuccess(SuperbusService.this);
+                        provider.removePersistedCommand(c);
                         transientCount = 0;
                     }
                     catch (TransientException e)
@@ -185,11 +186,12 @@ public class SuperbusService extends Service
                             {
                                 log.w(TAG, "Purging command on TransientException: {" + c.logSummary() +"}");
                                 c.onPermanentError(SuperbusService.this, new PermanentException(e));
+                                provider.removePersistedCommand(c);
                             }
                             else
                             {
                                 log.i(TAG, "Reset command on TransientException: {" + c.logSummary() +"}");
-                                provider.putNoRestart(SuperbusService.this, c);
+                                provider.putMemOnly(SuperbusService.this, c);
                                 c.onTransientError(SuperbusService.this, e);
                             }
 
@@ -206,11 +208,13 @@ public class SuperbusService extends Service
                         catch (StorageException e1)
                         {
                             logPermanentException(c, e1);
+                            provider.removePersistedCommand(c);
                         }
                     }
                     catch (Throwable e)
                     {
                         logPermanentException(c, e);
+                        provider.removePersistedCommand(c);
                     }
 
                     if (delaySleep > 0)

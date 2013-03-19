@@ -110,6 +110,12 @@ public abstract class AbstractSqlitePersistenceProvider extends AbstractStoredPe
     }
 
     @Override
+    public void removePersistedCommand(Command c) throws StorageException
+    {
+        removeCommand(c);
+    }
+
+    @Override
     protected void removeCommand(Command command) throws StorageException
     {
         if(command instanceof SqliteCommand)

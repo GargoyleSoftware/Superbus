@@ -149,9 +149,9 @@ public abstract class Command implements Comparable<Command>, Serializable
      *
      * @param message String message that can be tested by each command.  Similar to broadcast action.
      */
-    public void onRuntimeMessage(String message)
+    public void onRuntimeMessage(Context context, String message)
     {
-        onRuntimeMessage(message, null);
+        onRuntimeMessage(context, message, null);
     }
 
     /**
@@ -159,7 +159,7 @@ public abstract class Command implements Comparable<Command>, Serializable
      * @param message
      * @param args
      */
-    public void onRuntimeMessage(String message, Map args)
+    public void onRuntimeMessage(Context context, String message, Map args)
     {
 
     }

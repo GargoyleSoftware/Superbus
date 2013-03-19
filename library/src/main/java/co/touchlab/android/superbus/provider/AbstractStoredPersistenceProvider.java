@@ -50,14 +50,5 @@ public abstract class AbstractStoredPersistenceProvider extends AbstractPersiste
         checkedCommandClasses.add(commandClass);
     }
 
-    //TODO: when exception triggered, in-memory list needs a refresh (or a full exception thrown).
-    @Override
-    public synchronized Command getAndRemoveCurrent() throws StorageException
-    {
-        Command command = super.getAndRemoveCurrent();
-        removeCommand(command);
-        return command;
-    }
-
     protected abstract void removeCommand(Command command) throws StorageException;
 }
