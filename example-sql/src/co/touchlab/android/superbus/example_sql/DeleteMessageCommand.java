@@ -34,7 +34,11 @@ public class DeleteMessageCommand extends SqliteCommand {
 
     @Override
     public boolean same(Command command) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if(!(command instanceof DeleteMessageCommand))
+            return false;
+
+        DeleteMessageCommand deleteMessageCommand = (DeleteMessageCommand) command;
+        return serverId.equals(deleteMessageCommand.serverId);
     }
 
     @Override

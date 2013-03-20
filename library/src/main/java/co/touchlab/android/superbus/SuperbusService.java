@@ -147,20 +147,6 @@ public class SuperbusService extends Service
 
                 while ((c = grabTop()) != null)
                 {
-                    //TODO: should add a listener call, and check network connectivity in there.
-                    /*if (!isOnline(SuperbusService.this))
-                    {
-                        try
-                        {
-                            provider.put(SuperbusService.this, c);
-                        }
-                        catch (StorageException e1)
-                        {
-                            logPermanentException(c, e1);
-                        }
-                        log.i(TAG, "No network connection. Put off updates.");
-                        break;
-                    }*/
                     logCommandDebug(c, "[CommandThread]");
                     log.d(TAG, "Command [" + c.getClass().getSimpleName() +"] started: " + System.currentTimeMillis());
 

@@ -34,7 +34,9 @@ public class MyApplication extends Application implements PersistedApplication
 
         try
         {
+
             persistenceProvider = new GsonFilePersistenceProvider(this);
+
         }
         catch (StorageException e)
         {
@@ -56,6 +58,8 @@ public class MyApplication extends Application implements PersistedApplication
                 }
             }
         }.start();
+
+        throw new UnsupportedOperationException("Don't use this example now. Need to fix file storage");
     }
 
     private void setupStrictMode()

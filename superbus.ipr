@@ -93,12 +93,8 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/library/pom.xml" />
+        <option value="$PROJECT_DIR$/library/pom.xml" />
       </list>
-    </option>
-    <option name="ignoredFiles">
-      <set>
-        <option value="$PROJECT_DIR$/../touchtrack/android-client/pom.xml" />
-      </set>
     </option>
   </component>
   <component name="ModuleEditorState">
@@ -230,13 +226,15 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/example/example.iml" filepath="$PROJECT_DIR$/example/example.iml" />
       <module fileurl="file://$PROJECT_DIR$/example-sql/example-sql.iml" filepath="$PROJECT_DIR$/example-sql/example-sql.iml" />
+      <module fileurl="file://$PROJECT_DIR$/library/src/main/main.iml" filepath="$PROJECT_DIR$/library/src/main/main.iml" />
       <module fileurl="file://$PROJECT_DIR$/library/superbus.iml" filepath="$PROJECT_DIR$/library/superbus.iml" />
+      <module fileurl="file://$PROJECT_DIR$/library/src/test/test.iml" filepath="$PROJECT_DIR$/library/src/test/test.iml" />
     </modules>
   </component>
   <component name="ProjectResources">
     <default-html-doctype>http://www.w3.org/1999/xhtml</default-html-doctype>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="Android 4.2 Google APIs" project-jdk-type="Android SDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="SvnBranchConfigurationManager">
@@ -247,6 +245,14 @@
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="libraryTable">
+    <library name="lib">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/library/target/lib/gson-2.2.2.jar!/" />
+        <root url="jar://$PROJECT_DIR$/library/target/lib/basic-http-client-0.87.1.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
     <library name="libs">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/example/libs/basic-http-client-android-0.86.jar!/" />
@@ -274,6 +280,14 @@
       <SOURCES>
         <root url="jar://$PROJECT_DIR$/example-sql/libs/superbus-sources.jar!/" />
       </SOURCES>
+    </library>
+    <library name="locallib">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/library/locallib/sqlcipher.jar!/" />
+        <root url="jar://$PROJECT_DIR$/library/locallib/basic-http-client-android-0.86.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
     </library>
     <library name="Maven: code.google.com:basic-http-client:0.87.1">
       <CLASSES>
@@ -424,6 +438,17 @@
       <SOURCES>
         <root url="file://$APPLICATION_HOME_DIR$/plugins/sass/lib/stubs/sass_functions.scss" />
       </SOURCES>
+    </library>
+    <library name="target">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/library/target/superbus-test-sources.jar!/" />
+        <root url="jar://$PROJECT_DIR$/library/target/original-superbus.jar!/" />
+        <root url="jar://$PROJECT_DIR$/library/target/superbus-tests.jar!/" />
+        <root url="jar://$PROJECT_DIR$/library/target/superbus-sources.jar!/" />
+        <root url="jar://$PROJECT_DIR$/library/target/superbus.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
     </library>
   </component>
 </project>

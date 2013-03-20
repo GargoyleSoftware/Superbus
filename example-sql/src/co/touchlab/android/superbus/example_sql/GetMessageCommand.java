@@ -39,6 +39,7 @@ public class GetMessageCommand extends SqliteCommand
     {
         if(message.equals(CANCEL_UPDATE))
             cancelUpdate = true;
+        repostSelf(context);
     }
 
     @Override

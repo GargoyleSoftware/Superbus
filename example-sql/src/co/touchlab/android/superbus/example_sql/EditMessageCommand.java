@@ -37,7 +37,11 @@ public class EditMessageCommand extends SqliteCommand
 
     @Override
     public boolean same(Command command) {
-        return false;
+        if(!(command instanceof EditMessageCommand))
+            return false;
+
+        EditMessageCommand deleteMessageCommand = (EditMessageCommand) command;
+        return serverId.equals(deleteMessageCommand.serverId);
     }
 
     @Override

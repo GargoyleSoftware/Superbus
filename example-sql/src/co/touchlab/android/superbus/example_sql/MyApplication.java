@@ -94,7 +94,7 @@ public class MyApplication extends Application implements PersistedApplication
     @Override
     public BusLog getLog()
     {
-        return new BusLogImpl();
+        return null;
     }
 
     @Override

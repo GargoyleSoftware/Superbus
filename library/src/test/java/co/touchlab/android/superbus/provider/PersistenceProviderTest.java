@@ -5,7 +5,6 @@ import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.StorageException;
 import co.touchlab.android.superbus.TransientException;
-import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.provider.memory.MemoryPersistenceProvider;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,20 +23,20 @@ public class PersistenceProviderTest
     {
         MemoryPersistenceProvider provider = new MemoryPersistenceProvider(new NullBusLog());
 
-        provider.putNoRestart(null, new DefaultPriorityCommand(Command.DEFAULT_PRIORITY));
+        provider.putMemOnly(null, new DefaultPriorityCommand(Command.DEFAULT_PRIORITY));
         Thread.sleep(100);
         DefaultPriorityCommand lowest = new DefaultPriorityCommand(Command.LOWER_PRIORITY);
-        provider.putNoRestart(null, lowest);
+        provider.putMemOnly(null, lowest);
         Thread.sleep(100);
-        provider.putNoRestart(null, new DefaultPriorityCommand(Command.DEFAULT_PRIORITY));
+        provider.putMemOnly(null, new DefaultPriorityCommand(Command.DEFAULT_PRIORITY));
         Thread.sleep(100);
-        provider.putNoRestart(null, new DefaultPriorityCommand(Command.HIGHER_PRIORITY));
+        provider.putMemOnly(null, new DefaultPriorityCommand(Command.HIGHER_PRIORITY));
         Thread.sleep(100);
-        provider.putNoRestart(null, new DefaultPriorityCommand(Command.DEFAULT_PRIORITY));
+        provider.putMemOnly(null, new DefaultPriorityCommand(Command.DEFAULT_PRIORITY));
         Thread.sleep(100);
-        provider.putNoRestart(null, new DefaultPriorityCommand(Command.MUCH_HIGHER_PRIORITY));
+        provider.putMemOnly(null, new DefaultPriorityCommand(Command.MUCH_HIGHER_PRIORITY));
         Thread.sleep(100);
-        provider.putNoRestart(null, new DefaultPriorityCommand(Command.DEFAULT_PRIORITY));
+        provider.putMemOnly(null, new DefaultPriorityCommand(Command.DEFAULT_PRIORITY));
 
 
         int lastPriority = Integer.MAX_VALUE;
