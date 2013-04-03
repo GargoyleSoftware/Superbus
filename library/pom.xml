@@ -102,7 +102,6 @@
                 </configuration>
             </plugin>
 
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -195,8 +194,6 @@
 
       </properties>
 
-
-
       <distributionManagement>
       <repository>
         <id>archiva.internal</id>
@@ -252,6 +249,20 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.2.2</version>
+        </dependency>
+
+        <!--Dependency Injection -->
+        <dependency>
+          <groupId>com.google.inject</groupId>
+          <artifactId>guice</artifactId>
+          <version>3.0</version>
+          <classifier>no_aop</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>org.roboguice</groupId>
+            <artifactId>roboguice</artifactId>
+            <version>2.0-RC2b</version>
         </dependency>
 
     </dependencies>

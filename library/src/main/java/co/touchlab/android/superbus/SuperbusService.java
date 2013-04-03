@@ -11,6 +11,7 @@ import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.log.BusLogImpl;
 import co.touchlab.android.superbus.provider.PersistedApplication;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
+import roboguice.service.RoboService;
 
 /**
  * The heart of the command bus.  Processes commands.
@@ -19,7 +20,7 @@ import co.touchlab.android.superbus.provider.PersistenceProvider;
  * Date: 1/11/12
  * Time: 8:57 AM
  */
-public class SuperbusService extends Service
+public class SuperbusService extends RoboService
 {
     public static final String TAG = SuperbusService.class.getSimpleName();
     private CommandThread thread;
