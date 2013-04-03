@@ -4,14 +4,23 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>co.touchlab</groupId>
     <artifactId>superbus</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.9</version>
     <packaging>jar</packaging>
     <name>Superbus Service</name>
     <url>http://touchlab.co/</url>
     <description>Persistent command bus</description>
 
+    <repositories>
+      <repository>
+        <id>gargoyle</id>
+        <name>Gargoyle Archiva Repo</name>
+        <url>http://archiva.gargoyle.co/archiva/repository/internal/</url>
+      </repository>
+    </repositories>
+
     <build>
-        <finalName>superbus</finalName>
+      <finalName>superbus</finalName>
+
         <resources>
             <resource>
                 <directory>library/src/main/resources</directory>
@@ -184,7 +193,24 @@
         <junit-version>4.8.1</junit-version>
         <log4j-version>1.2.15</log4j-version>
 
-    </properties>
+      </properties>
+
+
+
+      <distributionManagement>
+      <repository>
+        <id>archiva.internal</id>
+        <name>Internal Release Repository</name>
+        <url>http://archiva.gargoyle.co/archiva/repository/internal/</url>
+      </repository>
+      <snapshotRepository>
+        <id>archiva.snapshots</id>
+        <name>Internal Snapshot Repository</name>
+        <url>http://archiva.gargoyle.co/archiva/repository/internal/</url>
+      </snapshotRepository>
+    </distributionManagement>
+
+
     <dependencies>
         <!-- =================================================================== -->
         <!-- main dependencies -->
@@ -214,9 +240,11 @@
         </dependency>
 
         <dependency>
-            <groupId>basic-http-client</groupId>
-            <artifactId>android</artifactId>
-            <version>0.86</version>
+            <groupId>code.google.com</groupId>
+            <artifactId>basic-http-client</artifactId>
+            <!--<artifactId>android</artifactId>-->
+            <!--<version>0.87-SNAPSHOT</version>-->
+            <version>0.87</version>
             <scope>compile</scope>
         </dependency>
 
